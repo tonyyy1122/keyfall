@@ -5,6 +5,7 @@ import {
   accuracyOf,
   arcadePoints,
   chooseLanes,
+  outerLane,
   cpmOf,
   cycleDifficulty,
   derive,
@@ -82,6 +83,15 @@ test('lane count follows width and difficulty', () => {
   assert.equal(chooseLanes(400, 'easy'), 2)
   assert.equal(chooseLanes(1000, 'easy'), 3)
   assert.equal(chooseLanes(1000, 'hard'), 4)
+})
+
+test('sponsored words prefer the outer lanes', () => {
+  const open = [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY]
+  assert.equal(outerLane(4, open, 78, () => 0), 0)
+  assert.equal(outerLane(4, open, 78, () => 0.9), 3)
+  assert.equal(outerLane(4, [20, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, 400], 78, () => 0), 3)
+  assert.equal(outerLane(4, [30, 500, 500, 40], 78, () => 0), null)
+  assert.equal(outerLane(3, [20, 10, 90], 78, () => 0), 2)
 })
 
 test('difficulty cycles and high scores stay in their bucket', () => {

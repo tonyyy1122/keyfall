@@ -99,6 +99,30 @@ export function chooseLanes(width: number, difficulty: Difficulty): number {
   return 4
 }
 
+/**
+ * Lane for a sponsored word: the left or right edge, whichever has room.
+ * Returns null when both edges are crowded so the caller can use any open lane.
+ */
+export function outerLane(
+  lanes: number,
+  room: readonly number[],
+  minRoom: number,
+  rng: () => number,
+): number | null {
+  if (lanes <= 0) return null
+  const edges = lanes === 1 ? [0] : [0, lanes - 1]
+  const open = edges.filter((lane) => (room[lane] ?? 0) > minRoom)
+  if (open.length === 0) return null
+  if (open.length === 1) return open[0]!
+  const left = open[0]!
+  const right = open[1]!
+  const leftRoom = room[left] ?? 0
+  const rightRoom = room[right] ?? 0
+  const bothClear = !Number.isFinite(leftRoom) && !Number.isFinite(rightRoom)
+  if (bothClear || Math.abs(leftRoom - rightRoom) < 48) return rng() < 0.5 ? left : right
+  return leftRoom > rightRoom ? left : right
+}
+
 export function compareRank(a: Rankable, b: Rankable): number {
   if (a.score !== b.score) return b.score - a.score
   if (a.wpm !== b.wpm) return b.wpm - a.wpm

@@ -56,7 +56,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--aisumi); outlin
 .shell {
   position: relative;
   z-index: 1;
-  width: min(1180px, 100%);
+  width: min(1280px, 100%);
   margin: 0 auto;
   min-height: 100dvh;
   display: flex;
@@ -154,22 +154,40 @@ body[data-phase="over"] .shell {
 .heart.on { color: var(--shu); }
 .heart.pop { animation: popheart 0.3s ease; }
 
-#ad-banner { margin: 0; }
+#ad-banner { margin: 0 0 36px; }
 #stage {
   position: relative;
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 200px;
+  grid-template-columns: minmax(0, 1fr) 64px 200px;
   gap: 0;
   align-items: stretch;
 }
+#rail { grid-column: 3; }
+body[data-phase="menu"] .shell {
+  height: 100dvh;
+  overflow: hidden;
+}
+body[data-phase="menu"] #world { overflow: auto; }
 body[data-phase="countdown"] #stage,
 body[data-phase="playing"] #stage,
 body[data-phase="paused"] #stage,
 body[data-phase="over"] #stage {
-  grid-template-columns: 180px minmax(0, 1fr) 200px;
+  grid-template-columns: 172px minmax(0, 1fr) 64px 200px;
 }
+body[data-phase="countdown"] #log,
+body[data-phase="playing"] #log,
+body[data-phase="paused"] #log,
+body[data-phase="over"] #log { grid-column: 1; }
+body[data-phase="countdown"] .playcol,
+body[data-phase="playing"] .playcol,
+body[data-phase="paused"] .playcol,
+body[data-phase="over"] .playcol { grid-column: 2; }
+body[data-phase="countdown"] #rail,
+body[data-phase="playing"] #rail,
+body[data-phase="paused"] #rail,
+body[data-phase="over"] #rail { grid-column: 4; }
 .playcol {
   position: relative;
   min-width: 0;
@@ -239,12 +257,13 @@ body[data-phase="over"] #log {
 #rail {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   min-width: 0;
   min-height: 0;
   align-self: stretch;
-  border-left: 1px solid var(--rule);
-  padding: 4px 0 8px 16px;
+  margin-left: 0;
+  border-left: 0;
+  padding: 0 0 4px;
 }
 .coffee {
   display: inline-flex;
@@ -258,6 +277,7 @@ body[data-phase="over"] #log {
   border-radius: 2px;
   padding: 8px 10px;
   text-align: center;
+  margin-top: auto;
 }
 .coffee:hover { background: var(--sumi); color: var(--sheet); }
 .ad-slot.placeholder {
@@ -667,6 +687,19 @@ body[data-caps="on"][data-script="en"][data-mode="sprint"][data-diff="hard"] .ca
 @media (max-width: 980px) {
   .shell { padding: 12px 16px 16px; gap: 10px; }
   .ad-slot.banner.placeholder { min-height: 0; padding: 8px 12px; }
+  #rail,
+  body[data-phase="countdown"] #log,
+  body[data-phase="playing"] #log,
+  body[data-phase="paused"] #log,
+  body[data-phase="over"] #log,
+  body[data-phase="countdown"] .playcol,
+  body[data-phase="playing"] .playcol,
+  body[data-phase="paused"] .playcol,
+  body[data-phase="over"] .playcol,
+  body[data-phase="countdown"] #rail,
+  body[data-phase="playing"] #rail,
+  body[data-phase="paused"] #rail,
+  body[data-phase="over"] #rail { grid-column: auto; }
   #stage,
   body[data-phase="countdown"] #stage,
   body[data-phase="playing"] #stage,
@@ -683,15 +716,17 @@ body[data-caps="on"][data-script="en"][data-mode="sprint"][data-diff="hard"] .ca
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-self: stretch;
+    margin-top: 32px;
     border-left: 0;
-    border-top: 1px solid var(--rule);
-    padding: 12px 0 0;
-    gap: 12px;
+    border-top: 0;
+    padding: 0;
+    gap: 16px;
   }
+  .coffee { margin-top: 0; justify-self: end; align-self: start; }
   .ad-slot.sidebar.placeholder,
   .ad-slot.sidebar.live { min-height: 84px; }
   .field, .desk { min-height: 0; }
-  #ad-banner { max-height: 72px; overflow: auto; }
+  #ad-banner { margin-bottom: 20px; max-height: 72px; overflow: auto; }
   .modes { grid-template-columns: 1fr; }
   .mode + .mode { border-left: 0; }
 }

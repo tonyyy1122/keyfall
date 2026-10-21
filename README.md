@@ -64,7 +64,7 @@ npm run preview
 
 ## 廣告版位
 
-畫面上有兩個佔位：題庫上方的橫幅，以及右側咖啡按鈕下面的直式欄。它們在版面格子裡，不會蓋住落下的詞。
+畫面上有兩個佔位：遊戲區上方的橫幅，中間留白；右側靠外的直式欄。請我喝杯咖啡在直式欄最下方。它們都不會蓋住落下的詞。
 
 編輯 `src/monetization.ts` 的 `adSlots`：
 
@@ -75,7 +75,7 @@ npm run preview
 
 ## 請我喝杯咖啡
 
-右側黃色按鈕的網址集中在 `src/monetization.ts` 的 `coffee`：
+右下角按鈕的網址集中在 `src/monetization.ts` 的 `coffee`：
 
 - `username`：你的 Buy Me a Coffee 使用者名稱。
 - `url`：完整網址，例如 `https://buymeacoffee.com/your-name`。

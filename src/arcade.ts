@@ -1,6 +1,6 @@
 import type { Sfx } from './audio.ts'
 import { DIFFICULTIES } from './config.ts'
-import { arcadePoints, chooseLanes, chunkFits, derive, freshStats, pickChunk, pickTarget, rampOf } from './logic.ts'
+import { arcadePoints, chooseLanes, chunkFits, derive, freshStats, outerLane, pickChunk, pickTarget, rampOf } from './logic.ts'
 import { SPONSOR_CHANCE, rollSponsor, type Sponsor } from './sponsors.ts'
 import type { Difficulty, EndReason, LiveStats, Script } from './types.ts'
 import { pickWord, wordsFor } from './words.ts'
@@ -410,7 +410,7 @@ export class ArcadeGame {
     this.paintWord(word)
     word.width = el.offsetWidth
     word.height = el.offsetHeight
-    const lane = this.pickLane()
+    const lane = this.pickLane(chosen.sponsor != null)
     if (lane == null) {
       el.remove()
       return false
@@ -424,25 +424,29 @@ export class ArcadeGame {
     return true
   }
 
-  private hasRoom(): boolean {
-    for (let lane = 0; lane < this.lanes; lane++) {
-      let top = Number.POSITIVE_INFINITY
-      for (const word of this.words) {
-        if (word.lane === lane) top = Math.min(top, word.y)
-      }
-      if (top > 78) return true
+  private laneRoom(): number[] {
+    const room = Array.from({ length: this.lanes }, () => Number.POSITIVE_INFINITY)
+    for (const word of this.words) {
+      if (word.lane >= 0 && word.lane < room.length) room[word.lane] = Math.min(room[word.lane]!, word.y)
     }
-    return false
+    return room
   }
 
-  private pickLane(): number | null {
+  private hasRoom(): boolean {
+    return this.laneRoom().some((top) => top > 78)
+  }
+
+  private pickLane(sponsored: boolean): number | null {
+    const room = this.laneRoom()
+    const minRoom = 78
+    if (sponsored) {
+      const edge = outerLane(this.lanes, room, minRoom, Math.random)
+      if (edge != null) return edge
+    }
     let best = -1
-    let bestRoom = 78
+    let bestRoom = minRoom
     for (let lane = 0; lane < this.lanes; lane++) {
-      let top = Number.POSITIVE_INFINITY
-      for (const word of this.words) {
-        if (word.lane === lane) top = Math.min(top, word.y)
-      }
+      const top = room[lane]!
       if (top > bestRoom) {
         bestRoom = top
         best = lane

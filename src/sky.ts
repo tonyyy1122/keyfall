@@ -49,8 +49,8 @@ export function startSky(canvas: HTMLCanvasElement): () => void {
         }
       }
       const dark = document.documentElement.dataset.theme === 'dark'
-      const alpha = mote.a * (dark ? 0.85 : 0.45)
-      ctx.fillStyle = mote.warm ? `rgba(201, 137, 152, ${alpha})` : `rgba(90, 108, 148, ${alpha * 0.85})`
+      const alpha = mote.a * (dark ? 0.35 : 0.18)
+      ctx.fillStyle = `rgba(26, 26, 24, ${alpha})`
       ctx.beginPath()
       ctx.arc(mote.x, mote.y, mote.r * 1.7, 0, Math.PI * 2)
       ctx.fill()

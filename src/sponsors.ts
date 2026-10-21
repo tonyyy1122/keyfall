@@ -3,7 +3,7 @@ import type { Difficulty } from './types.ts'
 /**
  * 贊助詞設定。
  * 落下的中文詞裡，會依 weight 與難度機率混入這裡的品牌或標語。
- * example 為 true 時，側欄會標成「範例 · 名稱」。換成真正的贊助時，把 example 拿掉。
+ * example 為 true 時，側欄會寫成「範例，名稱」。換成真正的贊助時，把 example 拿掉。
  * url、logo 可以省略。logo 請放公開圖片網址。
  */
 export interface Sponsor {

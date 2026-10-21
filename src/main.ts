@@ -156,7 +156,7 @@ function pushLog(item: ClearedItem): void {
     li.className = 'sponsored'
     const who = document.createElement('span')
     who.className = 'who'
-    who.textContent = item.sponsor.example ? `範例 · ${item.sponsor.name}` : item.sponsor.name
+    who.textContent = item.sponsor.example ? `範例，${item.sponsor.name}` : item.sponsor.name
     li.append(who)
     if (item.sponsor.logo && httpUrl(item.sponsor.logo)) {
       const img = document.createElement('img')
@@ -257,7 +257,7 @@ function toggleMute(): void {
 function applyTheme(theme: 'light' | 'dark'): void {
   document.documentElement.dataset.theme = theme
   const meta = document.querySelector('meta[name="theme-color"]')
-  if (meta) meta.setAttribute('content', theme === 'dark' ? '#1a1715' : '#f6f1ea')
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#121211' : '#eef0ee')
   paintTheme(themeBtn, theme)
 }
 

@@ -102,19 +102,11 @@ export function menuHtml(mode: Mode, difficulty: Difficulty, scores: readonly Sc
     .map((id) => {
       const copy = modeCopy(script, id)
       const pressed = id === mode
-      const rain =
-        id === 'arcade'
-          ? script === 'zh'
-            ? `<span class="rain" aria-hidden="true"><i>茶</i><i>雨</i><i>字</i><i>鍵</i></span>`
-            : `<span class="rain" aria-hidden="true"><i>tea</i><i>fox</i><i>moon</i><i>key</i></span>`
-          : `<span class="sample-bar" aria-hidden="true"></span>`
       return `
         <button class="mode" type="button" data-act="mode" data-mode="${id}" aria-pressed="${pressed}">
           <span class="kicker">${copy.kicker}</span>
           <span class="mode-name">${copy.label}</span>
           <span class="mode-copy">${copy.blurb}</span>
-          <span class="mark" aria-hidden="true">${copy.mark}</span>
-          ${rain}
         </button>
       `
     })
@@ -132,11 +124,11 @@ export function menuHtml(mode: Mode, difficulty: Difficulty, scores: readonly Sc
     .slice()
     .sort(compareRank)[0]
 
-  const eyebrow = script === 'zh' ? '中文打字練習' : '英文打字練習'
+  const eyebrow = script === 'zh' ? '今天練中文。' : '今天練英文。'
   const lede =
     script === 'zh'
-      ? '詞語從夜色裡落下。用注音或倉頡把它們打完，組字送出後才算數。也可以改打英文。'
-      : '單字從夜色裡落下。落地之前把它們打完，或用六十秒把一段英文順順打完。'
+      ? '字從上方落下。用注音或倉頡打完，選字送出之後才算數。想練英文，也可以從這裡切過去。'
+      : '單字從上方落下。落地之前打完，或用六十秒把一段英文順順打完。'
   const ime =
     script === 'zh'
       ? '請把輸入法切到中文。組字時不會算分，選字送出後才比對。'
@@ -165,12 +157,12 @@ export function menuHtml(mode: Mode, difficulty: Difficulty, scores: readonly Sc
       <section class="board">
         <div class="board-head">
           <h2>排行榜</h2>
-          <p>${modeCopy(script, mode).label} · ${DIFFICULTIES[difficulty].label} · ${script === 'zh' ? '中文' : 'English'}</p>
+          <p>現在是${modeCopy(script, mode).label}，${DIFFICULTIES[difficulty].label}，${script === 'zh' ? '中文' : '英文'}。</p>
         </div>
         ${boardHtml(scores, mode, difficulty, script)}
         <p class="fine">成績只留在這台瀏覽器。中文與英文分開排名。</p>
       </section>
-      <p class="keys"><kbd>↑</kbd><kbd>↓</kbd> 選模式 · <kbd>←</kbd><kbd>→</kbd> 調難度 · <kbd>L</kbd> 切換中文／英文 · <kbd>Enter</kbd> 開始 · <kbd>H</kbd> 說明 · <kbd>M</kbd> 音效</p>
+      <p class="keys">上下鍵選模式，左右鍵調難度。L 切換中文和英文，Enter 開始，H 看說明，M 開關音效。</p>
     </section>
   `
 }
@@ -252,7 +244,7 @@ export function pauseHtml(auto: boolean, script: Script): string {
         <button class="ghost" type="button" data-act="retry">重來一局</button>
         <button class="ghost" type="button" data-act="menu">回主選單</button>
       </div>
-      <p class="keys"><kbd>Enter</kbd> 繼續 · <kbd>R</kbd> 重來 · <kbd>Q</kbd> 主選單</p>
+      <p class="keys">Enter 繼續，R 重來，Q 回主選單。</p>
     </div>
   `
 }
@@ -276,7 +268,7 @@ export function overHtml(
   const speedName = script === 'zh' ? '每分鐘字數' : 'WPM'
   return `
     <div class="sheet result">
-      <p class="eyebrow">${esc(modeCopy(script, mode).label)} · ${esc(DIFFICULTIES[difficulty].label)}</p>
+      <p class="eyebrow">${esc(modeCopy(script, mode).label)}，${esc(DIFFICULTIES[difficulty].label)}</p>
       <div class="result-top">
         <h2>${title}</h2>
         ${isBest ? '<span class="stamp">新紀錄</span>' : `<span class="place">${place}</span>`}
@@ -301,7 +293,7 @@ export function overHtml(
         </div>
         ${boardHtml(scores, mode, difficulty, script, highlightAt)}
       </section>
-      <p class="keys"><kbd>Enter</kbd> 再來一局 · <kbd>Esc</kbd> 回主選單</p>
+      <p class="keys">Enter 再來一局，Esc 回主選單。</p>
     </div>
   `
 }

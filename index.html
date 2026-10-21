@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0c0a" />
+    <meta name="description" content="鍵雨：英文打字練習遊戲。字雨街機與六十秒競速，兩種模式。" />
+    <title>鍵雨 — 英文打字遊戲</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif&family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <canvas id="sky" aria-hidden="true"></canvas>
+    <div class="shell">
+      <header class="bar">
+        <button id="home" class="brand" type="button" aria-label="回主選單">
+          <span class="seal" aria-hidden="true"></span>
+          <span class="brand-name">鍵雨</span>
+        </button>
+        <div id="hud" class="hud" hidden></div>
+        <div class="tools">
+          <button id="pause" class="tool" type="button" hidden>暫停</button>
+          <button id="mute" class="tool" type="button" aria-pressed="false">音效開</button>
+        </div>
+      </header>
+      <main id="stage">
+        <div id="world"></div>
+        <div id="overlay"></div>
+      </main>
+    </div>
+    <div id="live" class="sr" aria-live="polite"></div>
+    <noscript>這個遊戲需要啟用 JavaScript。</noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

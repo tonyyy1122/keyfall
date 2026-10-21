@@ -5,8 +5,8 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0c0a" />
-    <meta name="description" content="鍵雨：英文打字練習遊戲。字雨街機與六十秒競速，兩種模式。" />
-    <title>鍵雨 — 英文打字遊戲</title>
+    <meta name="description" content="鍵雨：繁體中文打字遊戲。詞語落下，用注音或倉頡打完。也可切換英文練習。" />
+    <title>鍵雨 — 中文打字遊戲</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -28,9 +28,35 @@
           <button id="mute" class="tool" type="button" aria-pressed="false">音效開</button>
         </div>
       </header>
+      <div id="ad-banner"></div>
       <main id="stage">
-        <div id="world"></div>
-        <div id="overlay"></div>
+        <aside id="log" aria-label="打過的詞">
+          <h2>打過的詞</h2>
+          <ol id="log-list"></ol>
+          <p id="log-empty">打完的詞會出現在這裡。</p>
+        </aside>
+        <div class="playcol">
+          <div id="world"></div>
+          <div id="ime-dock" hidden>
+            <label for="ime">組字</label>
+            <input
+              id="ime"
+              lang="zh-Hant"
+              autocomplete="off"
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck="false"
+              enterkeyhint="done"
+              aria-label="中文輸入"
+            />
+            <p id="ime-preview" class="compose" aria-live="off"></p>
+          </div>
+          <div id="overlay"></div>
+        </div>
+        <aside id="rail">
+          <a id="coffee" class="coffee" target="_blank" rel="noopener noreferrer">請我喝杯咖啡</a>
+          <div id="ad-sidebar"></div>
+        </aside>
       </main>
     </div>
     <div id="live" class="sr" aria-live="polite"></div>

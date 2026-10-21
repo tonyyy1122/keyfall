@@ -1,5 +1,5 @@
 import { DIFFICULTY_ORDER, SCORE_LIMIT } from './config.ts'
-import type { Difficulty, LiveStats, Mode, Rankable, ScoreEntry } from './types.ts'
+import type { Difficulty, LiveStats, Mode, Rankable, ScoreEntry, Script } from './types.ts'
 
 export function accuracyOf(correct: number, errors: number): number {
   const total = correct + errors
@@ -11,6 +11,16 @@ export function wpmOf(correctChars: number, elapsedMs: number): number {
   if (elapsedMs < 1000 || correctChars <= 0) return 0
   const minutes = elapsedMs / 60_000
   return correctChars / 5 / minutes
+}
+
+/** Characters per minute. Used for Chinese; English keeps words-per-minute. */
+export function cpmOf(correctChars: number, elapsedMs: number): number {
+  if (elapsedMs < 1000 || correctChars <= 0) return 0
+  return correctChars / (elapsedMs / 60_000)
+}
+
+export function speedOf(correctChars: number, elapsedMs: number, script: Script): number {
+  return script === 'zh' ? cpmOf(correctChars, elapsedMs) : wpmOf(correctChars, elapsedMs)
 }
 
 export function rampOf(elapsedMs: number, factor: number): number {
@@ -41,9 +51,9 @@ export function freshStats(lives: number, remainingMs: number): LiveStats {
   }
 }
 
-export function derive(stats: LiveStats): void {
+export function derive(stats: LiveStats, script: Script = 'en'): void {
   stats.accuracy = accuracyOf(stats.correct, stats.errors)
-  stats.wpm = wpmOf(stats.correct, stats.elapsedMs)
+  stats.wpm = speedOf(stats.correct, stats.elapsedMs, script)
   stats.maxCombo = Math.max(stats.maxCombo, stats.combo)
 }
 
@@ -52,6 +62,22 @@ export interface TargetCandidate {
   text: string
   typed: number
   y: number
+}
+
+export function chunkFits(rest: string, chunk: string): boolean {
+  return chunk.length > 0 && rest.startsWith(chunk)
+}
+
+/** Lock the lowest not-yet-typed word whose text starts with the committed chunk. */
+export function pickChunk(words: readonly TargetCandidate[], chunk: string): number | null {
+  if (!chunk) return null
+  let best: TargetCandidate | null = null
+  for (const word of words) {
+    if (word.typed !== 0) continue
+    if (!word.text.startsWith(chunk)) continue
+    if (!best || word.y > best.y || (word.y === best.y && word.id < best.id)) best = word
+  }
+  return best?.id ?? null
 }
 
 export function pickTarget(words: readonly TargetCandidate[], key: string): number | null {
@@ -85,13 +111,21 @@ export function isBetter(a: Rankable, b: Rankable): boolean {
   return a.accuracy > b.accuracy
 }
 
+export function scriptOf(entry: ScoreEntry): Script {
+  return entry.script === 'zh' ? 'zh' : 'en'
+}
+
+function sameBucket(a: ScoreEntry, b: ScoreEntry): boolean {
+  return a.mode === b.mode && a.difficulty === b.difficulty && scriptOf(a) === scriptOf(b)
+}
+
 export function insertScore(
   all: readonly ScoreEntry[],
   entry: ScoreEntry,
   limit = SCORE_LIMIT,
 ): { scores: ScoreEntry[]; rank: number | null; isBest: boolean } {
-  const same = all.filter((item) => item.mode === entry.mode && item.difficulty === entry.difficulty)
-  const rest = all.filter((item) => item.mode !== entry.mode || item.difficulty !== entry.difficulty)
+  const same = all.filter((item) => sameBucket(item, entry))
+  const rest = all.filter((item) => !sameBucket(item, entry))
   const prevBest = same.slice().sort(compareRank)[0]
   const better = !prevBest || isBetter(entry, prevBest)
   const merged = same.concat(entry).sort(compareRank).slice(0, limit)

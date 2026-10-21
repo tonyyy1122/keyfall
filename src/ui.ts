@@ -1,4 +1,4 @@
-import { DIFFICULTIES, MODE_COPY } from './config.ts'
+import { DIFFICULTIES, difficultyHint, modeCopy } from './config.ts'
 import {
   compareRank,
   esc,
@@ -9,19 +9,19 @@ import {
   formatWhen,
   formatWpm,
 } from './logic.ts'
-import type { Difficulty, EndReason, LiveStats, Mode, ScoreEntry } from './types.ts'
+import type { Difficulty, EndReason, LiveStats, Mode, ScoreEntry, Script } from './types.ts'
 
 export function fillHud(hud: HTMLElement): void {
   hud.innerHTML = `
     <div class="stat"><span class="k">分數</span><span class="v" data-k="score">0</span></div>
-    <div class="stat" title="每分鐘字數"><span class="k">速度</span><span class="v" data-k="wpm">0</span></div>
+    <div class="stat" data-speed title="每分鐘字數"><span class="k" data-k="speed-label">字／分</span><span class="v" data-k="wpm">0</span></div>
     <div class="stat"><span class="k">準確率</span><span class="v" data-k="acc">100%</span></div>
     <div class="stat" data-combo><span class="k">連擊</span><span class="v" data-k="combo">0</span></div>
     <div class="stat" data-extra><span class="k" data-k="extra-label">生命</span><span class="v extra" data-k="extra"></span></div>
   `
 }
 
-export function paintHud(hud: HTMLElement, stats: LiveStats, mode: Mode): void {
+export function paintHud(hud: HTMLElement, stats: LiveStats, mode: Mode, script: Script = 'zh'): void {
   const score = hud.querySelector('[data-k="score"]')
   const wpm = hud.querySelector('[data-k="wpm"]')
   const acc = hud.querySelector('[data-k="acc"]')
@@ -39,6 +39,11 @@ export function paintHud(hud: HTMLElement, stats: LiveStats, mode: Mode): void {
   hud.dataset.score = String(stats.score)
   hud.dataset.wpm = String(Math.round(stats.wpm))
   hud.dataset.combo = String(stats.combo)
+
+  const speedLabel = hud.querySelector('[data-k="speed-label"]')
+  const speedStat = hud.querySelector('[data-speed]')
+  if (speedLabel) speedLabel.textContent = script === 'zh' ? '字／分' : 'WPM'
+  speedStat?.setAttribute('title', script === 'zh' ? '每分鐘字數' : '每分鐘英文詞數')
 
   comboStat.classList.toggle('hot', stats.combo >= 5)
   comboStat.classList.toggle('blaze', stats.combo >= 10)
@@ -85,14 +90,16 @@ export function paintMute(button: HTMLButtonElement, muted: boolean): void {
   button.setAttribute('aria-pressed', muted ? 'true' : 'false')
 }
 
-export function menuHtml(mode: Mode, difficulty: Difficulty, scores: readonly ScoreEntry[]): string {
-  const cards = (Object.keys(MODE_COPY) as Mode[])
+export function menuHtml(mode: Mode, difficulty: Difficulty, scores: readonly ScoreEntry[], script: Script): string {
+  const cards = (['arcade', 'sprint'] as Mode[])
     .map((id) => {
-      const copy = MODE_COPY[id]
+      const copy = modeCopy(script, id)
       const pressed = id === mode
       const rain =
         id === 'arcade'
-          ? `<span class="rain" aria-hidden="true"><i>tea</i><i>fox</i><i>moon</i><i>key</i></span>`
+          ? script === 'zh'
+            ? `<span class="rain" aria-hidden="true"><i>茶</i><i>雨</i><i>字</i><i>鍵</i></span>`
+            : `<span class="rain" aria-hidden="true"><i>tea</i><i>fox</i><i>moon</i><i>key</i></span>`
           : `<span class="sample-bar" aria-hidden="true"></span>`
       return `
         <button class="mode" type="button" data-act="mode" data-mode="${id}" aria-pressed="${pressed}">
@@ -114,20 +121,34 @@ export function menuHtml(mode: Mode, difficulty: Difficulty, scores: readonly Sc
     .join('')
 
   const best = scores
-    .filter((entry) => entry.mode === mode && entry.difficulty === difficulty)
+    .filter((entry) => entry.mode === mode && entry.difficulty === difficulty && (entry.script ?? 'en') === script)
     .slice()
     .sort(compareRank)[0]
 
+  const eyebrow = script === 'zh' ? '中文打字練習' : '英文打字練習'
+  const lede =
+    script === 'zh'
+      ? '詞語從夜色裡落下。用注音或倉頡把它們打完，組字送出後才算數。也可以改打英文。'
+      : '單字從夜色裡落下。落地之前把它們打完，或用六十秒把一段英文順順打完。'
+  const ime =
+    script === 'zh'
+      ? '請把輸入法切到中文。組字時不會算分，選字送出後才比對。'
+      : '請把輸入法切到英文。'
+
   return `
     <section class="menu">
-      <p class="eyebrow">英文打字練習</p>
+      <p class="eyebrow">${eyebrow}</p>
       <h1>鍵雨</h1>
-      <p class="lede">單字從夜色裡落下。落地之前把它們打完，或用六十秒把一段英文順順打完。</p>
-      <p class="ime">開始前請把輸入法切到英文。</p>
+      <p class="lede">${lede}</p>
+      <div class="lang" role="radiogroup" aria-label="打字語言">
+        <button type="button" data-act="lang" data-script="zh" aria-pressed="${script === 'zh'}">中文</button>
+        <button type="button" data-act="lang" data-script="en" aria-pressed="${script === 'en'}">English</button>
+      </div>
+      <p class="ime">${ime}</p>
       <div class="modes">${cards}</div>
       <div class="diff-block">
         <div class="diff" role="radiogroup" aria-label="難度">${diffs}</div>
-        <p class="diff-hint">${DIFFICULTIES[difficulty].hint}</p>
+        <p class="diff-hint">${difficultyHint(script, difficulty)}</p>
       </div>
       <div class="row">
         <button class="primary" type="button" data-act="start">開始遊戲</button>
@@ -137,17 +158,48 @@ export function menuHtml(mode: Mode, difficulty: Difficulty, scores: readonly Sc
       <section class="board">
         <div class="board-head">
           <h2>排行榜</h2>
-          <p>${MODE_COPY[mode].label} · ${DIFFICULTIES[difficulty].label}</p>
+          <p>${modeCopy(script, mode).label} · ${DIFFICULTIES[difficulty].label} · ${script === 'zh' ? '中文' : 'English'}</p>
         </div>
-        ${boardHtml(scores, mode, difficulty)}
-        <p class="fine">成績只留在這台瀏覽器。</p>
+        ${boardHtml(scores, mode, difficulty, script)}
+        <p class="fine">成績只留在這台瀏覽器。中文與英文分開排名。</p>
       </section>
-      <p class="keys"><kbd>↑</kbd><kbd>↓</kbd> 選模式 · <kbd>←</kbd><kbd>→</kbd> 調難度 · <kbd>Enter</kbd> 開始 · <kbd>H</kbd> 說明 · <kbd>M</kbd> 音效</p>
+      <p class="keys"><kbd>↑</kbd><kbd>↓</kbd> 選模式 · <kbd>←</kbd><kbd>→</kbd> 調難度 · <kbd>L</kbd> 切換中文／英文 · <kbd>Enter</kbd> 開始 · <kbd>H</kbd> 說明 · <kbd>M</kbd> 音效</p>
     </section>
   `
 }
 
-export function helpHtml(): string {
+export function helpHtml(script: Script): string {
+  const arcade =
+    script === 'zh'
+      ? `
+            <li>好幾個詞會同時落下。標著「贊助」的是品牌詞。</li>
+            <li>用注音、倉頡或其他中文輸入法。組字過程不算，選字送出後才比對。</li>
+            <li>送出的字若是某個還沒開始的詞的開頭，會鎖定最靠近地面的那個。</li>
+            <li>打錯會中斷連擊，已經送出的進度還在。</li>
+            <li>詞碰到下方紅線就失去一條命。</li>
+            <li>越接近地面才消去，會有「驚險」加分。</li>
+            <li>打完的詞會留在左側，贊助詞附上連結。</li>`
+      : `
+            <li>好幾個單字會同時落下。</li>
+            <li>按下第一個字母，會鎖定最靠近地面、而且對得上的那個。</li>
+            <li>把剩下的字母依序打完，單字就消去。</li>
+            <li>打錯會中斷連擊，已經打對的進度還在。</li>
+            <li>單字碰到下方紅線就失去一條命。</li>
+            <li>越接近地面才消去，會有「驚險」加分。</li>`
+  const sprint =
+    script === 'zh'
+      ? `
+            <li>你有六十秒，用輸入法依序打出接下來的字。</li>
+            <li>組字時不會前進，選字送出後才比對。</li>
+            <li>送出的內容必須接得上後面的文字，標點也要打。</li>
+            <li>打錯不會跳過，訂正後才能繼續。</li>
+            <li>一整句分段都沒打錯，連擊就加一。</li>`
+      : `
+            <li>你有六十秒，依序打出每一個字元，空白也要打。</li>
+            <li>簡單與普通不計大小寫。</li>
+            <li>困難要完全相符，包含大小寫、逗號、句點和撇號。</li>
+            <li>打錯不會跳過，訂正後才能繼續。</li>
+            <li>一整個單字都沒打錯，連擊就加一。</li>`
   return `
     <div class="sheet help">
       <p class="eyebrow">操作說明</p>
@@ -155,23 +207,12 @@ export function helpHtml(): string {
       <div class="help-grid">
         <section>
           <h3>字雨</h3>
-          <ul>
-            <li>好幾個單字會同時落下。</li>
-            <li>按下第一個字母，會鎖定最靠近地面、而且對得上的那個。</li>
-            <li>把剩下的字母依序打完，單字就消去。</li>
-            <li>打錯會中斷連擊，已經打對的進度還在。</li>
-            <li>單字碰到下方紅線就失去一條命。</li>
-            <li>越接近地面才消去，會有「驚險」加分。</li>
+          <ul>${arcade}
           </ul>
         </section>
         <section>
           <h3>競速</h3>
-          <ul>
-            <li>你有六十秒，依序打出每一個字元，空白也要打。</li>
-            <li>簡單與普通不計大小寫。</li>
-            <li>困難要完全相符，包含大小寫、逗號、句點和撇號。</li>
-            <li>打錯不會跳過，訂正後才能繼續。</li>
-            <li>一整個單字都沒打錯，連擊就加一。</li>
+          <ul>${sprint}
           </ul>
         </section>
       </div>
@@ -192,12 +233,13 @@ export function countdownHtml(label: string): string {
   return `<div class="count" aria-hidden="true">${esc(label)}</div>`
 }
 
-export function pauseHtml(auto: boolean): string {
+export function pauseHtml(auto: boolean, script: Script): string {
+  const noun = script === 'zh' ? '詞語' : '單字'
   return `
     <div class="sheet slim">
       <p class="eyebrow">暫停</p>
       <h2>${auto ? '先幫你按住了' : '先停一下'}</h2>
-      <p class="lede">${auto ? '視窗切到背景，單字先停在原地。' : '單字會停在原地，時間也不會走。'}</p>
+      <p class="lede">${auto ? `視窗切到背景，${noun}先停在原地。` : `${noun}會停在原地，時間也不會走。`}</p>
       <div class="row">
         <button class="primary" type="button" data-act="resume">繼續遊戲</button>
         <button class="ghost" type="button" data-act="retry">重來一局</button>
@@ -217,22 +259,24 @@ export function overHtml(
   rank: number | null,
   isBest: boolean,
   highlightAt: string,
+  script: Script,
 ): string {
   const title = reason === 'time' ? '時間到' : '生命用盡'
   const place = isBest ? '新紀錄' : rank ? `第 ${rank} 名` : '這次沒有擠進排行榜'
-  const wordLabel = mode === 'arcade' ? '消去單字' : '完成單字'
+  const wordLabel = mode === 'arcade' ? (script === 'zh' ? '消去的詞' : '消去單字') : script === 'zh' ? '完成詞句' : '完成單字'
   const timeLabel = mode === 'arcade' ? '存活' : '用時'
   const timeValue = mode === 'arcade' ? formatClock(stats.elapsedMs) : '60 秒'
+  const speedName = script === 'zh' ? '每分鐘字數' : 'WPM'
   return `
     <div class="sheet result">
-      <p class="eyebrow">${esc(MODE_COPY[mode].label)} · ${esc(DIFFICULTIES[difficulty].label)}</p>
+      <p class="eyebrow">${esc(modeCopy(script, mode).label)} · ${esc(DIFFICULTIES[difficulty].label)}</p>
       <div class="result-top">
         <h2>${title}</h2>
         ${isBest ? '<span class="stamp">新紀錄</span>' : `<span class="place">${place}</span>`}
       </div>
       <p class="big-score">${formatInt(stats.score)}</p>
       <dl class="metrics">
-        <div><dt>每分鐘字數</dt><dd>${formatWpm(stats.wpm)}</dd></div>
+        <div><dt>${speedName}</dt><dd>${formatWpm(stats.wpm)}</dd></div>
         <div><dt>準確率</dt><dd>${formatAccuracy(stats.accuracy)}</dd></div>
         <div><dt>最高連擊</dt><dd>${stats.maxCombo}</dd></div>
         <div><dt>正確字元</dt><dd>${formatInt(stats.correct)}</dd></div>
@@ -248,7 +292,7 @@ export function overHtml(
           <h2>排行榜</h2>
           <p>${place}</p>
         </div>
-        ${boardHtml(scores, mode, difficulty, highlightAt)}
+        ${boardHtml(scores, mode, difficulty, script, highlightAt)}
       </section>
       <p class="keys"><kbd>Enter</kbd> 再來一局 · <kbd>Esc</kbd> 回主選單</p>
     </div>
@@ -259,10 +303,11 @@ function boardHtml(
   scores: readonly ScoreEntry[],
   mode: Mode,
   difficulty: Difficulty,
+  script: Script,
   highlightAt?: string,
 ): string {
   const rows = scores
-    .filter((entry) => entry.mode === mode && entry.difficulty === difficulty)
+    .filter((entry) => entry.mode === mode && entry.difficulty === difficulty && (entry.script ?? 'en') === script)
     .slice()
     .sort(compareRank)
   if (rows.length === 0) {
@@ -277,7 +322,7 @@ function boardHtml(
   return `
     <table>
       <thead>
-        <tr><th>名次</th><th>分數</th><th>速度</th><th>準確率</th><th class="hide-sm">連擊</th><th class="hide-sm">日期</th></tr>
+        <tr><th>名次</th><th>分數</th><th>${script === 'zh' ? '字／分' : 'WPM'}</th><th>準確率</th><th class="hide-sm">連擊</th><th class="hide-sm">日期</th></tr>
       </thead>
       <tbody>${body}</tbody>
     </table>

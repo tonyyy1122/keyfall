@@ -1,15 +1,24 @@
 import type { Sfx } from './audio.ts'
 import { DIFFICULTIES } from './config.ts'
-import { arcadePoints, chooseLanes, derive, freshStats, pickTarget, rampOf } from './logic.ts'
-import type { Difficulty, EndReason, LiveStats } from './types.ts'
+import { arcadePoints, chooseLanes, chunkFits, derive, freshStats, pickChunk, pickTarget, rampOf } from './logic.ts'
+import { SPONSOR_CHANCE, rollSponsor, type Sponsor } from './sponsors.ts'
+import type { Difficulty, EndReason, LiveStats, Script } from './types.ts'
 import { pickWord, wordsFor } from './words.ts'
+import { zhWordsFor } from './lexicon-zh.ts'
+
+export interface ClearedItem {
+  text: string
+  sponsor: Sponsor | null
+}
 
 export interface EngineOpts {
   difficulty: Difficulty
+  script: Script
   sfx: Sfx
   onStats: (stats: LiveStats) => void
   onToast: (text: string) => void
   onEnd: (stats: LiveStats, reason: EndReason) => void
+  onCleared?: (item: ClearedItem) => void
 }
 
 interface FallWord {
@@ -21,6 +30,7 @@ interface FallWord {
   typed: number
   width: number
   height: number
+  sponsor: Sponsor | null
   el: HTMLDivElement
   glyphs: HTMLSpanElement
 }
@@ -29,6 +39,8 @@ export class ArcadeGame {
   readonly stats: LiveStats
   private readonly cfg: (typeof DIFFICULTIES)[Difficulty]
   private readonly bank: readonly string[]
+  private readonly script: Script
+  private readonly timeScale: number
   private field!: HTMLDivElement
   private rampEl!: HTMLDivElement
   private words: FallWord[] = []
@@ -52,8 +64,10 @@ export class ArcadeGame {
 
   constructor(opts: EngineOpts) {
     this.opts = opts
+    this.script = opts.script
+    this.timeScale = opts.script === 'zh' ? 1.32 : 1
     this.cfg = DIFFICULTIES[opts.difficulty]
-    this.bank = wordsFor(opts.difficulty)
+    this.bank = opts.script === 'zh' ? zhWordsFor(opts.difficulty) : wordsFor(opts.difficulty)
     this.stats = freshStats(this.cfg.lives, 0)
     this.onFrame = (now) => this.frame(now)
   }
@@ -62,10 +76,12 @@ export class ArcadeGame {
     world.replaceChildren()
     const field = document.createElement('div')
     field.className = 'field'
+    field.dataset.script = this.script
     field.translate = false
+    const hint = this.script === 'zh' ? '詞語即將落下' : '單字即將落下'
     field.innerHTML = `
       <div class="wash" aria-hidden="true"></div>
-      <p class="field-hint">單字即將落下</p>
+      <p class="field-hint">${hint}</p>
       <div class="ramp" aria-hidden="true">落速 ×1.0</div>
       <div class="ground" aria-hidden="true"></div>
     `
@@ -81,7 +97,19 @@ export class ArcadeGame {
     if (this.running || this.ended || this.dead) return
     this.layout()
     this.ensureLanes()
-    this.field.style.setProperty('--word-size', this.opts.difficulty === 'easy' ? '32px' : this.opts.difficulty === 'hard' ? '22px' : '26px')
+    const size =
+      this.script === 'zh'
+        ? this.opts.difficulty === 'easy'
+          ? '36px'
+          : this.opts.difficulty === 'hard'
+            ? '26px'
+            : '30px'
+        : this.opts.difficulty === 'easy'
+          ? '32px'
+          : this.opts.difficulty === 'hard'
+            ? '22px'
+            : '26px'
+    this.field.style.setProperty('--word-size', size)
     this.trySpawn()
     if (this.opts.difficulty === 'hard') this.trySpawn()
     this.running = true
@@ -109,6 +137,7 @@ export class ArcadeGame {
   }
 
   key(key: string): void {
+    if (this.script !== 'en') return
     if (!this.running || this.ended) return
     if (!/^[a-zA-Z]$/.test(key)) return
     const ch = key.toLowerCase()
@@ -119,7 +148,7 @@ export class ArcadeGame {
         ch,
       )
       if (id == null) {
-        this.missKey()
+        this.miss(1)
         return
       }
       this.activeId = id
@@ -131,7 +160,7 @@ export class ArcadeGame {
       return
     }
     if (word.text[word.typed]?.toLowerCase() !== ch) {
-      this.missKey(word)
+      this.miss(1, word)
       return
     }
 
@@ -143,13 +172,50 @@ export class ArcadeGame {
     else this.pushStats()
   }
 
+  commitText(raw: string): void {
+    if (this.script !== 'zh') return
+    if (!this.running || this.ended) return
+    const chunk = raw.normalize('NFC').trim()
+    if (!chunk) return
+
+    if (this.activeId == null) {
+      const id = pickChunk(
+        this.words.map((word) => ({ id: word.id, text: word.text, typed: word.typed, y: word.y })),
+        chunk,
+      )
+      if (id == null) {
+        this.miss(chunk.length)
+        return
+      }
+      this.activeId = id
+    }
+
+    const word = this.words.find((item) => item.id === this.activeId)
+    if (!word) {
+      this.activeId = null
+      return
+    }
+    const rest = word.text.slice(word.typed)
+    if (!chunkFits(rest, chunk)) {
+      this.miss(chunk.length, word)
+      return
+    }
+
+    word.typed += chunk.length
+    this.stats.correct += chunk.length
+    this.paintWord(word)
+    this.opts.sfx.tick()
+    if (word.typed >= word.text.length) this.clearWord(word)
+    else this.pushStats()
+  }
+
   private pushStats(): void {
-    derive(this.stats)
+    derive(this.stats, this.script)
     this.opts.onStats(this.stats)
   }
 
-  private missKey(word?: FallWord): void {
-    this.stats.errors += 1
+  private miss(amount: number, word?: FallWord): void {
+    this.stats.errors += Math.max(1, amount)
     this.stats.combo = 0
     this.opts.sfx.error()
     if (word) {
@@ -181,6 +247,7 @@ export class ArcadeGame {
       this.opts.onToast(`${this.stats.combo} 連擊`)
     }
     this.floater(word, points, close)
+    this.opts.onCleared?.({ text: word.text, sponsor: word.sponsor })
     word.el.classList.add('gone')
     word.el.classList.remove('active', 'shake')
     const el = word.el
@@ -225,7 +292,7 @@ export class ArcadeGame {
     if (this.dead || this.ended) return
     this.ended = true
     this.pause()
-    derive(this.stats)
+    derive(this.stats, this.script)
     this.opts.onEnd(this.stats, reason)
   }
 
@@ -256,7 +323,7 @@ export class ArcadeGame {
     }
 
     this.spawnAcc += dt * 1000
-    const interval = this.cfg.spawnMs / ramp
+    const interval = (this.cfg.spawnMs * this.timeScale) / ramp
     if (this.spawnAcc >= interval && this.words.length < this.cfg.maxWords) {
       if (this.trySpawn()) this.spawnAcc = 0
     }
@@ -276,7 +343,7 @@ export class ArcadeGame {
     if (!this.field) return
     this.fieldWidth = this.field.clientWidth
     this.fieldHeight = this.field.clientHeight
-    if (this.fieldHeight > 40) this.baseSpeed = (this.fieldHeight - 28) / this.cfg.fallSeconds
+    if (this.fieldHeight > 40) this.baseSpeed = (this.fieldHeight - 28) / (this.cfg.fallSeconds * this.timeScale)
     this.ensureLanes()
     for (const word of this.words) {
       word.x = this.laneX(word.lane, word.width)
@@ -296,28 +363,47 @@ export class ArcadeGame {
     return Math.max(8, Math.min(raw, Math.max(8, this.fieldWidth - width - 8)))
   }
 
+  private chooseText(): { text: string; sponsor: Sponsor | null } {
+    const avoid = new Set(this.words.map((word) => word.text))
+    if (this.script === 'zh') {
+      const rolled = rollSponsor(Math.random, SPONSOR_CHANCE[this.opts.difficulty])
+      if (rolled) {
+        const text = rolled.sponsor.words.find((word) => !avoid.has(word))
+        if (text) return { sponsor: rolled.sponsor, text }
+      }
+    }
+    return { text: pickWord(this.bank, Math.random, avoid), sponsor: null }
+  }
+
   private trySpawn(): boolean {
     this.ensureLanes()
     if (!this.lanesReady || this.fieldHeight < 80 || !this.hasRoom()) return false
-    const avoid = new Set(this.words.map((word) => word.text))
-    const text = pickWord(this.bank, Math.random, avoid)
+    const chosen = this.chooseText()
     const el = document.createElement('div')
     el.className = 'fallword'
-    el.lang = 'en'
+    el.lang = this.script === 'zh' ? 'zh-Hant' : 'en'
     el.translate = false
+    if (chosen.sponsor) {
+      el.classList.add('sponsored')
+      const badge = document.createElement('span')
+      badge.className = 'badge'
+      badge.textContent = '贊助'
+      el.append(badge)
+    }
     const glyphs = document.createElement('span')
     glyphs.className = 'glyphs'
     el.append(glyphs)
     this.field.append(el)
     const word: FallWord = {
       id: this.nextId++,
-      text,
+      text: chosen.text,
       lane: 0,
       x: 0,
       y: 0,
       typed: 0,
       width: 0,
       height: 0,
+      sponsor: chosen.sponsor,
       el,
       glyphs,
     }

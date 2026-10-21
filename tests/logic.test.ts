@@ -1,17 +1,23 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
+import { auditZhLexicon, buildZhPassage } from '../src/lexicon-zh.ts'
 import {
   accuracyOf,
   arcadePoints,
   chooseLanes,
+  cpmOf,
   cycleDifficulty,
+  derive,
   formatAccuracy,
+  freshStats,
   insertScore,
   matchesChar,
+  pickChunk,
   pickTarget,
   rampOf,
   wpmOf,
 } from '../src/logic.ts'
+import { auditSponsors, rollSponsor, sponsorForText } from '../src/sponsors.ts'
 import { auditLexicon, buildPassage, wordsFor } from '../src/words.ts'
 import type { ScoreEntry } from '../src/types.ts'
 
@@ -23,6 +29,29 @@ test('accuracy treats an empty run as perfect', () => {
 test('wpm waits for a second of real typing', () => {
   assert.equal(wpmOf(25, 500), 0)
   assert.equal(wpmOf(50, 60_000), 10)
+})
+
+test('chinese speed is characters per minute', () => {
+  assert.equal(cpmOf(10, 500), 0)
+  assert.equal(cpmOf(30, 30_000), 60)
+  const stats = freshStats(3, 0)
+  stats.correct = 120
+  stats.elapsedMs = 60_000
+  derive(stats, 'zh')
+  assert.equal(stats.wpm, 120)
+  derive(stats, 'en')
+  assert.equal(stats.wpm, 24)
+})
+
+test('pickChunk locks the lowest word that starts with the commit', () => {
+  const words = [
+    { id: 1, text: '慢慢練習', typed: 0, y: 10 },
+    { id: 2, text: '慢慢把字打完', typed: 0, y: 50 },
+    { id: 3, text: '熱茶', typed: 1, y: 90 },
+  ]
+  assert.equal(pickChunk(words, '慢慢'), 2)
+  assert.equal(pickChunk(words, '熱'), null)
+  assert.equal(pickChunk(words, ''), null)
 })
 
 test('ramp starts at 1 and caps after 80 seconds', () => {
@@ -76,6 +105,10 @@ test('difficulty cycles and high scores stay in their bucket', () => {
   assert.equal(placed.scores.some((entry) => entry.mode === 'sprint'), true)
   const tie = insertScore([older], { ...older, at: '2026-03-01T00:00:00.000Z' })
   assert.equal(tie.isBest, false)
+  const chinese: ScoreEntry = { ...older, script: 'zh', score: 900, at: '2026-04-01T00:00:00.000Z' }
+  const split = insertScore([older], chinese, 1)
+  assert.equal(split.scores.length, 2)
+  assert.equal(split.isBest, true)
 })
 
 test('case matching follows difficulty', () => {
@@ -99,4 +132,23 @@ test('lexicon and passages stay typeable', () => {
   assert.match(hard, /[.,]/)
   assert.ok(easy.length >= 80)
   assert.ok(hard.length >= 80)
+})
+
+test('traditional lexicon, sponsors, and chinese passages', () => {
+  assert.deepEqual(auditZhLexicon(), [])
+  assert.deepEqual(auditSponsors(), [])
+  const passage = buildZhPassage('hard', () => 0.2, 80)
+  assert.match(passage, /。/)
+  assert.ok(passage.length >= 80)
+  assert.equal(rollSponsor(() => 0.99, 0.2), null)
+  const seq = [0, 0.99, 0]
+  let i = 0
+  const rolled = rollSponsor(() => seq[i++] ?? 0, 1, [
+    { id: 'a', name: '甲', words: ['甲甲'], weight: 1, example: true },
+    { id: 'b', name: '乙', words: ['乙乙乙'], weight: 1, example: true },
+  ])
+  assert.equal(rolled?.sponsor.id, 'b')
+  assert.equal(rolled?.text, '乙乙乙')
+  assert.equal(sponsorForText('青山茶行')?.id, 'qingshan')
+  assert.equal(sponsorForText('月亮'), null)
 })

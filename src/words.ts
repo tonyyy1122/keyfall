@@ -1,4 +1,5 @@
-import type { Difficulty } from './types.ts'
+import { buildZhPassage } from './lexicon-zh.ts'
+import type { Difficulty, Script } from './types.ts'
 
 const EASY = [
   'act', 'age', 'air', 'and', 'ant', 'arm', 'art', 'ask', 'bag', 'bar', 'bat', 'bed', 'bee', 'big', 'bit',
@@ -206,6 +207,16 @@ export function pickWord(bank: readonly string[], rng: () => number, avoid: Read
     if (!avoid.has(word)) return word
   }
   return bank[rngIndex(rng, bank.length)] ?? 'word'
+}
+
+export function passageFor(
+  script: Script,
+  difficulty: Difficulty,
+  rng: () => number = Math.random,
+  minChars = 900,
+): string {
+  if (script === 'zh') return buildZhPassage(difficulty, rng, minChars)
+  return buildPassage(difficulty, rng, minChars)
 }
 
 export function buildPassage(difficulty: Difficulty, rng: () => number = Math.random, minChars = 900): string {

@@ -1,12 +1,15 @@
 import './style.css'
-import type { ArcadeGame } from './arcade.ts'
+import { mountAds } from './ads.ts'
+import type { ArcadeGame, ClearedItem } from './arcade.ts'
 import { ArcadeGame as Arcade } from './arcade.ts'
 import { Sfx } from './audio.ts'
+import { attachIme } from './ime.ts'
+import { MODE_COPY } from './config.ts'
+import { cycleDifficulty, formatAccuracy, formatInt, formatWpm, otherMode } from './logic.ts'
+import { coffee } from './monetization.ts'
 import { SprintGame } from './sprint.ts'
 import { loadPersisted, savePersisted, submitScore } from './storage.ts'
-import type { Difficulty, EndReason, LiveStats, Mode, Phase } from './types.ts'
-import { cycleDifficulty, formatAccuracy, formatInt, formatWpm, otherMode } from './logic.ts'
-import { MODE_COPY } from './config.ts'
+import type { Difficulty, EndReason, LiveStats, Mode, Phase, Script } from './types.ts'
 import { startSky } from './sky.ts'
 import {
   countdownHtml,
@@ -33,6 +36,12 @@ const pauseBtn = document.querySelector<HTMLButtonElement>('#pause')!
 const muteBtn = document.querySelector<HTMLButtonElement>('#mute')!
 const live = document.querySelector<HTMLDivElement>('#live')!
 const sky = document.querySelector<HTMLCanvasElement>('#sky')!
+const logList = document.querySelector<HTMLOListElement>('#log-list')!
+const logEmpty = document.querySelector<HTMLParagraphElement>('#log-empty')!
+const imeDock = document.querySelector<HTMLDivElement>('#ime-dock')!
+const ime = document.querySelector<HTMLInputElement>('#ime')!
+const imePreview = document.querySelector<HTMLParagraphElement>('#ime-preview')!
+const coffeeLink = document.querySelector<HTMLAnchorElement>('#coffee')!
 
 let phase: Phase = 'menu'
 let helpOpen = false
@@ -43,6 +52,18 @@ let countTimer = 0
 
 fillHud(hud)
 paintMute(muteBtn, prefs.mute)
+mountAds()
+mountCoffee()
+attachIme(ime, {
+  onCompose: (text) => {
+    imePreview.textContent = text ? `組字中 ${text}` : ''
+  },
+  onCommit: (text) => {
+    imePreview.textContent = ''
+    if (phase !== 'playing' || prefs.script !== 'zh') return
+    session?.commitText(text)
+  },
+})
 startSky(sky)
 showMenu()
 
@@ -80,21 +101,102 @@ document.querySelector<HTMLElement>('#stage')!.addEventListener('click', (event)
 
 window.addEventListener('keydown', onKey)
 window.addEventListener('keyup', syncCaps)
-document.addEventListener('pointerdown', () => sfx.unlock())
+document.addEventListener('pointerdown', (event) => {
+  sfx.unlock()
+  if (prefs.script !== 'zh' || phase !== 'playing') return
+  const target = event.target
+  if (!(target instanceof Element)) return
+  if (target.closest('button, a, input, textarea, select')) return
+  queueMicrotask(() => ime.focus())
+})
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && phase === 'playing') pause(true)
 })
+
+function mountCoffee(): void {
+  const href = httpUrl(coffee.url)
+  coffeeLink.textContent = coffee.label
+  coffeeLink.title = coffee.username
+  if (!href) {
+    coffeeLink.hidden = true
+    return
+  }
+  coffeeLink.hidden = false
+  coffeeLink.href = href
+}
+
+function httpUrl(url: string | undefined): string | null {
+  if (!url) return null
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null
+    return parsed.toString()
+  } catch {
+    return null
+  }
+}
+
+function clearLog(): void {
+  logList.replaceChildren()
+  logEmpty.hidden = false
+}
+
+function pushLog(item: ClearedItem): void {
+  logEmpty.hidden = true
+  const li = document.createElement('li')
+  if (item.sponsor) {
+    li.className = 'sponsored'
+    const who = document.createElement('span')
+    who.className = 'who'
+    who.textContent = item.sponsor.example ? `範例 · ${item.sponsor.name}` : item.sponsor.name
+    li.append(who)
+    if (item.sponsor.logo && httpUrl(item.sponsor.logo)) {
+      const img = document.createElement('img')
+      img.className = 'logo'
+      img.alt = ''
+      img.src = item.sponsor.logo
+      li.append(img)
+    }
+  }
+  const href = httpUrl(item.sponsor?.url)
+  if (href) {
+    const link = document.createElement('a')
+    link.className = 'said'
+    link.href = href
+    link.target = '_blank'
+    link.rel = 'noopener noreferrer'
+    link.textContent = item.text
+    li.append(link)
+  } else {
+    const said = document.createElement('span')
+    said.className = 'said'
+    said.textContent = item.text
+    li.append(said)
+  }
+  logList.prepend(li)
+  while (logList.children.length > 40) logList.lastElementChild?.remove()
+}
 
 function setPhase(next: Phase): void {
   phase = next
   document.body.dataset.phase = next
   document.body.dataset.mode = prefs.mode
   document.body.dataset.diff = prefs.difficulty
+  document.body.dataset.script = prefs.script
   const inRun = next === 'countdown' || next === 'playing' || next === 'paused' || next === 'over'
   hud.hidden = !inRun
   pauseBtn.hidden = next !== 'playing' && next !== 'paused'
   pauseBtn.textContent = next === 'paused' ? '繼續' : '暫停'
   home.setAttribute('aria-label', next === 'playing' ? '暫停' : '回主選單')
+  const showIme = prefs.script === 'zh' && (next === 'countdown' || next === 'playing' || next === 'paused')
+  imeDock.hidden = !showIme
+  if (!showIme) imePreview.textContent = ''
+}
+
+function focusIme(): void {
+  if (prefs.script !== 'zh') return
+  if (phase !== 'playing' && phase !== 'paused') return
+  ime.focus()
 }
 
 function clearOverlay(): void {
@@ -109,21 +211,22 @@ function showMenu(): void {
   session?.destroy()
   session = null
   helpOpen = false
+  clearLog()
   setPhase('menu')
   clearOverlay()
-  document.title = '鍵雨 — 英文打字遊戲'
+  document.title = prefs.script === 'zh' ? '鍵雨 — 中文打字遊戲' : '鍵雨 — 英文打字遊戲'
   drawMenu()
 }
 
 function drawMenu(): void {
-  world.innerHTML = menuHtml(prefs.mode, prefs.difficulty, prefs.scores)
+  world.innerHTML = menuHtml(prefs.mode, prefs.difficulty, prefs.scores, prefs.script)
 }
 
 function openHelp(): void {
   if (phase !== 'menu') return
   helpOpen = true
   overlay.className = 'show'
-  overlay.innerHTML = helpHtml()
+  overlay.innerHTML = helpHtml(prefs.script)
 }
 
 function closeHelp(): void {
@@ -159,6 +262,16 @@ function setDifficulty(difficulty: Difficulty): void {
   drawMenu()
 }
 
+function setScript(script: Script): void {
+  if (prefs.script === script) return
+  prefs.script = script
+  document.body.dataset.script = script
+  persist()
+  sfx.ui()
+  document.title = script === 'zh' ? '鍵雨 — 中文打字遊戲' : '鍵雨 — 英文打字遊戲'
+  drawMenu()
+}
+
 function startGame(): void {
   if (helpOpen) return
   sfx.unlock()
@@ -166,11 +279,14 @@ function startGame(): void {
   countToken += 1
   window.clearTimeout(countTimer)
   session?.destroy()
+  clearLog()
   const opts = {
     difficulty: prefs.difficulty,
+    script: prefs.script,
     sfx,
-    onStats: (stats: LiveStats) => paintHud(hud, stats, prefs.mode),
+    onStats: (stats: LiveStats) => paintHud(hud, stats, prefs.mode, prefs.script),
     onToast: showToast,
+    onCleared: (item: ClearedItem) => pushLog(item),
     onEnd: (stats: LiveStats, reason: EndReason) => {
       if (id !== runId) return
       finish(stats, reason)
@@ -179,7 +295,7 @@ function startGame(): void {
   session = prefs.mode === 'arcade' ? new Arcade(opts) : new SprintGame(opts)
   session.mount(world)
   setPhase('countdown')
-  paintHud(hud, session.stats, prefs.mode)
+  paintHud(hud, session.stats, prefs.mode, prefs.script)
   document.title = `鍵雨 — ${MODE_COPY[prefs.mode].label}`
   runCountdown()
 }
@@ -209,6 +325,7 @@ function beginPlay(): void {
   setPhase('playing')
   session.start()
   sfx.go()
+  focusIme()
 }
 
 function skipCountdown(): void {
@@ -223,7 +340,7 @@ function pause(auto = false): void {
   session.pause()
   setPhase('paused')
   overlay.className = 'show'
-  overlay.innerHTML = pauseHtml(auto)
+  overlay.innerHTML = pauseHtml(auto, prefs.script)
 }
 
 function resume(): void {
@@ -231,6 +348,7 @@ function resume(): void {
   clearOverlay()
   setPhase('playing')
   session.resume()
+  focusIme()
 }
 
 function finish(stats: LiveStats, reason: EndReason): void {
@@ -243,6 +361,7 @@ function finish(stats: LiveStats, reason: EndReason): void {
     maxCombo: stats.maxCombo,
     mode: prefs.mode,
     difficulty: prefs.difficulty,
+    script: prefs.script,
     at: new Date().toISOString(),
   }
   const placed = submitScore(prefs, entry)
@@ -257,9 +376,11 @@ function finish(stats: LiveStats, reason: EndReason): void {
     placed.rank,
     placed.isBest,
     entry.at,
+    prefs.script,
   )
+  const speedName = prefs.script === 'zh' ? '每分鐘字數' : 'WPM'
   const place = placed.isBest ? '新紀錄。' : placed.rank ? `排行榜第 ${placed.rank} 名。` : ''
-  live.textContent = `${reason === 'time' ? '時間到' : '生命用盡'}。分數 ${formatInt(stats.score)}，每分鐘字數 ${formatWpm(stats.wpm)}，準確率 ${formatAccuracy(stats.accuracy)}。${place}`
+  live.textContent = `${reason === 'time' ? '時間到' : '生命用盡'}。分數 ${formatInt(stats.score)}，${speedName} ${formatWpm(stats.wpm)}，準確率 ${formatAccuracy(stats.accuracy)}。${place}`
 }
 
 function showToast(text: string): void {
@@ -280,6 +401,11 @@ function onAct(act: string, el: HTMLElement): void {
   if (act === 'diff' && phase === 'menu' && !helpOpen) {
     const difficulty = el.dataset.diff
     if (difficulty === 'easy' || difficulty === 'medium' || difficulty === 'hard') setDifficulty(difficulty)
+    return
+  }
+  if (act === 'lang' && phase === 'menu' && !helpOpen) {
+    const script = el.dataset.script
+    if (script === 'zh' || script === 'en') setScript(script)
     return
   }
   if (act === 'start' && phase === 'menu' && !helpOpen) {
@@ -316,6 +442,14 @@ function onKey(event: KeyboardEvent): void {
   if (event.key === 'F2') {
     event.preventDefault()
     toggleMute()
+    return
+  }
+
+  if (phase === 'playing' && prefs.script === 'zh') {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      pause()
+    }
     return
   }
 
@@ -385,6 +519,7 @@ function onKey(event: KeyboardEvent): void {
   if (event.key === '1') setDifficulty('easy')
   else if (event.key === '2') setDifficulty('medium')
   else if (event.key === '3') setDifficulty('hard')
+  else if (event.key === 'l' || event.key === 'L') setScript(prefs.script === 'zh' ? 'en' : 'zh')
   else if (event.key === 'Enter') {
     event.preventDefault()
     startGame()

@@ -1,5 +1,6 @@
 export type Mode = 'arcade' | 'sprint'
 export type Difficulty = 'easy' | 'medium' | 'hard'
+export type Script = 'zh' | 'en'
 export type Phase = 'menu' | 'countdown' | 'playing' | 'paused' | 'over'
 export type EndReason = 'lives' | 'time'
 
@@ -25,6 +26,8 @@ export interface ScoreEntry {
   maxCombo: number
   mode: Mode
   difficulty: Difficulty
+  /** Missing on scores saved before Chinese mode. Those count as English. */
+  script?: Script
   at: string
 }
 

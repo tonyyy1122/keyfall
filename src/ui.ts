@@ -90,6 +90,13 @@ export function paintMute(button: HTMLButtonElement, muted: boolean): void {
   button.setAttribute('aria-pressed', muted ? 'true' : 'false')
 }
 
+export function paintTheme(button: HTMLButtonElement, theme: 'light' | 'dark'): void {
+  const dark = theme === 'dark'
+  button.textContent = dark ? '深色' : '淺色'
+  button.setAttribute('aria-pressed', dark ? 'true' : 'false')
+  button.setAttribute('aria-label', dark ? '切換為淺色' : '切換為深色')
+}
+
 export function menuHtml(mode: Mode, difficulty: Difficulty, scores: readonly ScoreEntry[], script: Script): string {
   const cards = (['arcade', 'sprint'] as Mode[])
     .map((id) => {

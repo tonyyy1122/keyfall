@@ -19,6 +19,7 @@ import {
   overHtml,
   paintHud,
   paintMute,
+  paintTheme,
   pauseHtml,
 } from './ui.ts'
 
@@ -34,6 +35,7 @@ const hud = document.querySelector<HTMLDivElement>('#hud')!
 const home = document.querySelector<HTMLButtonElement>('#home')!
 const pauseBtn = document.querySelector<HTMLButtonElement>('#pause')!
 const muteBtn = document.querySelector<HTMLButtonElement>('#mute')!
+const themeBtn = document.querySelector<HTMLButtonElement>('#theme')!
 const live = document.querySelector<HTMLDivElement>('#live')!
 const sky = document.querySelector<HTMLCanvasElement>('#sky')!
 const logList = document.querySelector<HTMLOListElement>('#log-list')!
@@ -52,6 +54,7 @@ let countTimer = 0
 
 fillHud(hud)
 paintMute(muteBtn, prefs.mute)
+applyTheme(prefs.theme)
 mountAds()
 mountCoffee()
 attachIme(ime, {
@@ -84,6 +87,11 @@ pauseBtn.addEventListener('click', () => {
 muteBtn.addEventListener('click', () => {
   sfx.unlock()
   toggleMute()
+})
+
+themeBtn.addEventListener('click', () => {
+  sfx.unlock()
+  toggleTheme()
 })
 
 document.querySelector<HTMLElement>('#stage')!.addEventListener('click', (event) => {
@@ -244,6 +252,20 @@ function toggleMute(): void {
   persist()
   paintMute(muteBtn, prefs.mute)
   if (!prefs.mute) sfx.ui()
+}
+
+function applyTheme(theme: 'light' | 'dark'): void {
+  document.documentElement.dataset.theme = theme
+  const meta = document.querySelector('meta[name="theme-color"]')
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#1a1715' : '#f6f1ea')
+  paintTheme(themeBtn, theme)
+}
+
+function toggleTheme(): void {
+  prefs.theme = prefs.theme === 'dark' ? 'light' : 'dark'
+  applyTheme(prefs.theme)
+  persist()
+  sfx.ui()
 }
 
 function setMode(mode: Mode): void {

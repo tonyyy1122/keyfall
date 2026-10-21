@@ -16,12 +16,12 @@ export function startSky(canvas: HTMLCanvasElement): () => void {
   let motes: Mote[] = []
 
   const seed = () => {
-    const count = Math.round(Math.min(70, width / 18))
+    const count = Math.round(Math.min(36, width / 32))
     motes = Array.from({ length: count }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      r: Math.random() * 1.4 + 0.4,
-      v: 8 + Math.random() * 22,
+      r: Math.random() * 1.2 + 0.6,
+      v: 6 + Math.random() * 12,
       a: 0.08 + Math.random() * 0.18,
       warm: Math.random() > 0.35,
     }))
@@ -48,8 +48,12 @@ export function startSky(canvas: HTMLCanvasElement): () => void {
           mote.x = Math.random() * width
         }
       }
-      ctx.fillStyle = mote.warm ? `rgba(240, 180, 41, ${mote.a})` : `rgba(142, 224, 194, ${mote.a * 0.8})`
-      ctx.fillRect(mote.x, mote.y, mote.r, mote.r * 4)
+      const dark = document.documentElement.dataset.theme === 'dark'
+      const alpha = mote.a * (dark ? 0.85 : 0.45)
+      ctx.fillStyle = mote.warm ? `rgba(201, 137, 152, ${alpha})` : `rgba(90, 108, 148, ${alpha * 0.85})`
+      ctx.beginPath()
+      ctx.arc(mote.x, mote.y, mote.r * 1.7, 0, Math.PI * 2)
+      ctx.fill()
     }
   }
 

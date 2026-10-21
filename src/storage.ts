@@ -2,12 +2,15 @@ import { LEGACY_SAVE_KEY, SAVE_KEY } from './config.ts'
 import { insertScore } from './logic.ts'
 import type { Difficulty, Mode, ScoreEntry, Script } from './types.ts'
 
+export type ThemeName = 'light' | 'dark'
+
 export interface Persisted {
   scores: ScoreEntry[]
   mute: boolean
   mode: Mode
   difficulty: Difficulty
   script: Script
+  theme: ThemeName
 }
 
 const DEFAULTS: Persisted = {
@@ -16,6 +19,7 @@ const DEFAULTS: Persisted = {
   mode: 'arcade',
   difficulty: 'medium',
   script: 'zh',
+  theme: 'light',
 }
 
 function isMode(value: unknown): value is Mode {
@@ -28,6 +32,10 @@ function isDifficulty(value: unknown): value is Difficulty {
 
 function isScript(value: unknown): value is Script {
   return value === 'zh' || value === 'en'
+}
+
+function isTheme(value: unknown): value is ThemeName {
+  return value === 'light' || value === 'dark'
 }
 
 function isEntry(value: unknown): value is ScoreEntry {
@@ -60,6 +68,7 @@ function read(key: string): Persisted | null {
     mode: isMode(parsed.mode) ? parsed.mode : DEFAULTS.mode,
     difficulty: isDifficulty(parsed.difficulty) ? parsed.difficulty : DEFAULTS.difficulty,
     script: isScript(parsed.script) ? parsed.script : DEFAULTS.script,
+    theme: isTheme(parsed.theme) ? parsed.theme : DEFAULTS.theme,
   }
 }
 

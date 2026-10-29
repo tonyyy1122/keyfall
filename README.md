@@ -87,7 +87,7 @@ npm run preview
 
 ## Stripe 付款
 
-打賞和贊助都透過 `worker/index.ts` 建立 Stripe Checkout，用 `price_data` 直接帶金額，不必先在 Stripe 後台建商品。整個網站（`dist/` 的靜態檔加上 `/api/*`、`/admin`）是同一支 Cloudflare Worker，資料存在 D1，資料表在 `schema.sql`。
+打賞和贊助都透過 `worker/index.ts` 建立 Stripe Checkout，用 `price_data` 直接帶金額，不必先在 Stripe 後台建商品。價格是含稅價：標多少就收多少，稅從裡面扣。整個網站（`dist/` 的靜態檔加上 `/api/*`、`/admin`）是同一支 Cloudflare Worker，資料存在 D1，資料表在 `schema.sql`。
 
 | 路徑 | 用途 |
 | --- | --- |

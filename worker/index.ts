@@ -41,6 +41,8 @@ interface StripeEvent {
 }
 
 const SPONSOR_WEIGHT = 3
+/** 含稅價：標多少就收多少，稅從金額裡扣，不另外加在買家身上。 */
+const TAX_BEHAVIOR = 'inclusive'
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -87,6 +89,7 @@ async function startTip(request: Request, env: Env, url: URL): Promise<Response>
         price_data: {
           currency: CURRENCY,
           unit_amount: amount,
+          tax_behavior: TAX_BEHAVIOR,
           product_data: { name: tip.product, tax_code: env.STRIPE_TAX_CODE },
         },
       },
@@ -131,6 +134,7 @@ async function startSponsor(request: Request, env: Env, url: URL): Promise<Respo
         price_data: {
           currency: CURRENCY,
           unit_amount: order.plan.amount,
+          tax_behavior: TAX_BEHAVIOR,
           product_data: {
             name: `${SPONSOR_PRODUCT}（${order.plan.label}）`,
             description: `${order.name}：${order.words.map((w) => `「${w}」`).join('')}。審核通過後開始落下，不通過全額退款。`,

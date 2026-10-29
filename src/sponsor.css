@@ -1,160 +1,284 @@
-/* 認購贊助詞頁。沿用 style.css 的色票與元件，只補這一頁的版面。 */
+/* 認購贊助詞頁（landing page）。色票、字級、按鈕沿用 style.css。 */
 .page-sponsor { user-select: auto; }
-.page-sponsor .shell { min-height: 100dvh; }
-.page-sponsor .brand { text-decoration: none; color: inherit; }
-.page-sponsor .tool { text-decoration: none; }
+.page-sponsor .shell { gap: 0; }
+.page-sponsor .bar { margin-bottom: 24px; }
+.page-sponsor .tool[aria-current="page"] { color: var(--sumi); background: color-mix(in srgb, var(--sumi) 8%, transparent); }
+.page-sponsor a.primary { display: inline-block; text-decoration: none; }
 
-.buy {
+.buy { width: min(1080px, 100%); margin: 0 auto; }
+.buy > section { padding: 64px 0; }
+.buy > section + section { box-shadow: inset 0 1px 0 var(--rule); }
+.buy h2 { font-size: 30px; line-height: 36px; }
+
+/* 開場 */
+.hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
-  gap: 72px;
-  align-items: start;
-  padding: 36px 0 64px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+  gap: 64px;
+  align-items: center;
+  padding-top: 48px !important;
 }
-.buy h1 { font-size: clamp(2.4rem, 5vw, 3.4rem); }
-.buy .lede { max-width: 32rem; }
+.hero h1 { font-size: 48px; line-height: 1; padding-bottom: 8px; }
+.hero .lede { max-width: 520px; }
+.hero .row { margin-top: 32px; }
+.proof { margin: 12px 0 0; color: var(--nezumi); font-size: 14px; line-height: 20px; }
 
-.buy-form { margin-top: 36px; border-top: 1px solid var(--rule); }
-.field-row {
-  display: grid;
-  grid-template-columns: 4.5rem minmax(0, 1fr);
-  gap: 0 20px;
-  margin: 0;
-  padding: 18px 0 14px;
-  border: 0;
-  border-bottom: 1px solid var(--rule);
-  min-width: 0;
-}
-.field-row:last-child { border-bottom: 0; padding-top: 24px; }
-.field-row > label,
-.field-row > legend {
-  padding: 8px 0 0;
-  color: var(--nezumi);
-  font-size: 0.9rem;
-}
-/* legend 不吃 grid，要用 float 讓它排進第一欄。 */
-.field-row > legend { float: left; width: 4.5rem; margin-right: 20px; }
-fieldset.field-row { display: block; }
-fieldset.field-row > div { margin-left: calc(4.5rem + 20px); }
-
-.buy-form input:not([type="radio"]) {
-  width: 100%;
-  min-width: 0;
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid var(--sumi);
-  border-radius: 0;
-  padding: 6px 0;
-  font-size: 1.05rem;
-}
-.buy-form input:not([type="radio"]):focus { outline: none; border-bottom: 2px solid var(--aisumi); padding-bottom: 5px; }
-.buy-form input::placeholder { color: var(--nezumi); opacity: 0.55; }
-.word-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.buy-form .word-grid input {
-  font-family: var(--serif);
-  font-weight: 500;
-  font-size: 1.3rem;
-  letter-spacing: 0.12em;
-}
-.help { margin: 8px 0 0; color: var(--nezumi); font-size: 0.82rem; line-height: 1.6; }
-.err { margin: 6px 0 0; color: var(--shu); font-size: 0.85rem; }
-.err:empty { display: none; }
-.field-row.bad input:not([type="radio"]) { border-bottom: 2px solid var(--shu); padding-bottom: 5px; }
-
-.plans { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--rule); }
-.plan {
+.preview { min-width: 0; }
+.preview-field {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  padding: 12px 14px;
-  cursor: pointer;
-}
-.plan + .plan { border-left: 1px solid var(--rule); }
-.plan input { position: absolute; opacity: 0; pointer-events: none; }
-.plan:hover { background: color-mix(in srgb, var(--sumi) 3%, transparent); }
-.plan:has(input:checked) { box-shadow: inset 3px 0 0 var(--aisumi); }
-.plan:has(input:focus-visible) { outline: 2px solid var(--aisumi); outline-offset: 2px; }
-.plan-days { font-weight: 500; }
-.plan-price { font-family: var(--serif); font-size: 1.5rem; font-weight: 500; line-height: 1.3; }
-
-.pay { min-width: 11rem; padding: 12px 22px; font-size: 1.05rem; }
-.pay:disabled { opacity: 0.6; cursor: progress; }
-.buy-note {
-  margin: 20px 0 0;
-  padding: 10px 14px;
-  border-left: 2px solid var(--aisumi);
+  height: 320px;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
   background: var(--sheet);
 }
-
-.buy-done { margin-top: 36px; padding-top: 22px; border-top: 1px solid var(--sumi); max-width: 32rem; }
-.buy-done p { margin: 10px 0 22px; color: var(--nezumi); }
-.buy-done .primary { display: inline-block; text-decoration: none; }
-
-/* 預覽：跟遊戲同一張橫線稿紙，詞從上面落到紅線。 */
-.buy-preview { position: sticky; top: 24px; }
-.preview-cap { margin: 0 0 10px; color: var(--nezumi); font-size: 0.85rem; }
-.preview-field { height: 320px; flex: none; }
+.preview-field .ground { bottom: 16px; }
 .preview-word {
   left: 16%;
-  animation: preview-fall 6.5s linear infinite;
+  font-size: 30px;
+  animation: preview-fall 6500ms var(--ease) infinite;
 }
 .preview-log {
   display: flex;
   flex-wrap: wrap;
   gap: 2px 8px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--rule);
+  margin-top: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+  background: var(--sheet);
 }
-.preview-log .who { width: 100%; color: var(--shu); font-size: 0.75rem; }
-.preview-log .said.linked { border-bottom: 1px solid var(--shu); }
+.preview-log .who { width: 100%; color: var(--shu); font-size: 12px; line-height: 16px; }
+.preview-log .said.linked { text-decoration: underline; text-decoration-color: var(--shu); text-underline-offset: 4px; }
+.preview-cap { margin: 8px 0 0; color: var(--nezumi); font-size: 12px; line-height: 16px; }
 
-.steps { list-style: none; counter-reset: step; margin: 32px 0 0; padding: 0; }
-.steps li {
-  counter-increment: step;
-  display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr);
-  padding: 10px 0;
-  border-top: 1px solid var(--rule);
-  color: var(--nezumi);
-  font-size: 0.9rem;
+/* 標語：每個詞捲到時從淡墨變成全墨。 */
+.tagline p {
+  margin: 0;
+  max-width: 680px;
+  font-size: 36px;
+  line-height: 48px;
+  font-weight: 600;
+  text-wrap: balance;
 }
+.tagline .tw {
+  color: color-mix(in srgb, var(--sumi) 30%, transparent);
+  transition: color 600ms var(--ease);
+}
+.tagline .tw.on { color: var(--sumi); }
+
+/* 好處 */
+.benefits ul {
+  list-style: none;
+  margin: 32px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.benefits li,
+.steps li {
+  padding: 24px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+  background: var(--sheet);
+  color: var(--nezumi);
+  font-size: 14px;
+  line-height: 20px;
+}
+.benefits b,
+.steps b { display: block; margin-bottom: 8px; color: var(--sumi); font-size: 18px; line-height: 28px; font-weight: 600; }
+
+/* 三個步驟：真的有先後，所以標號。 */
+.steps {
+  list-style: none;
+  counter-reset: step;
+  margin: 32px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.steps li { counter-increment: step; }
 .steps li::before {
   content: counter(step);
-  grid-row: span 2;
-  font-family: var(--serif);
-  font-size: 1.15rem;
-  color: var(--sumi);
-  line-height: 1.5;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 16px;
+  border-radius: var(--r-btn);
+  background: var(--aisumi);
+  color: var(--ink-on-aisumi);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
 }
-.steps b { display: block; color: var(--sumi); font-weight: 500; }
+
+/* 表單 */
+.buy-form {
+  margin-top: 32px;
+  padding: 8px 32px 32px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sheet);
+  background: var(--sheet);
+}
+.field-row {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr);
+  gap: 0 24px;
+  margin: 0;
+  padding: 24px 0 16px;
+  border: 0;
+  box-shadow: inset 0 -1px 0 var(--rule);
+  min-width: 0;
+}
+.field-row.submit-row { box-shadow: none; padding-top: 24px; padding-bottom: 0; }
+.field-row > label,
+.field-row > legend {
+  padding: 8px 0 0;
+  color: var(--nezumi);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+/* legend 不吃 grid，用 float 排進第一欄。 */
+.field-row > legend { float: left; width: 80px; margin-right: 24px; }
+fieldset.field-row { display: block; }
+fieldset.field-row > div { margin-left: 104px; }
+
+.buy-form input:not([type="radio"]) {
+  width: 100%;
+  min-width: 0;
+  background: var(--raise);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-btn);
+  padding: 8px 12px;
+  font-size: 16px;
+  line-height: 24px;
+}
+.buy-form input:not([type="radio"]):hover { border-color: var(--nezumi); }
+.buy-form input:not([type="radio"]):focus { outline: none; border-color: var(--aisumi); box-shadow: 0 0 0 1px var(--aisumi); }
+.buy-form input::placeholder { color: var(--nezumi); opacity: 0.6; }
+.word-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.buy-form .word-grid input { font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: 0.08em; }
+.help { margin: 8px 0 0; color: var(--nezumi); font-size: 12px; line-height: 16px; }
+.err { margin: 8px 0 0; color: var(--shu); font-size: 14px; line-height: 20px; }
+.err:empty { display: none; }
+.field-row.bad input:not([type="radio"]) { border-color: var(--shu); box-shadow: 0 0 0 1px var(--shu); }
+
+.plans { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.plan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+  background: var(--raise);
+  cursor: pointer;
+}
+.plan input { position: absolute; opacity: 0; pointer-events: none; }
+.plan:hover { border-color: var(--nezumi); }
+.plan:has(input:checked) { border-color: var(--aisumi); box-shadow: 0 0 0 1px var(--aisumi); }
+.plan:has(input:focus-visible) { outline: 2px solid var(--aisumi); outline-offset: 2px; }
+.plan-days { color: var(--nezumi); font-size: 14px; line-height: 20px; font-weight: 600; }
+.plan-price { font-size: 24px; line-height: 32px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.pay { min-width: 176px; }
+.pay:disabled { opacity: 0.6; cursor: progress; }
+.buy-note {
+  margin: 24px 0 0;
+  padding: 12px 16px;
+  border: 1px solid var(--aisumi);
+  border-radius: var(--r-btn);
+  background: var(--raise);
+  font-size: 14px;
+  line-height: 20px;
+}
+.buy-done {
+  margin-top: 32px;
+  padding: 24px 32px 32px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sheet);
+  background: var(--sheet);
+  max-width: 680px;
+}
+.buy-done p { margin: 8px 0 24px; color: var(--nezumi); }
+
+/* 常見問題 */
+.faq > * { max-width: 768px; }
+.faq h2 { margin-bottom: 24px; }
+.faq details { border: 1px solid var(--rule); border-radius: var(--r-card); background: var(--sheet); }
+.faq details + details { margin-top: 8px; }
+.faq summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 16px 24px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; color: var(--nezumi); transition: transform 300ms var(--ease); }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq summary:focus-visible { outline: 2px solid var(--aisumi); outline-offset: 2px; border-radius: var(--r-card); }
+.faq details p { margin: 0; padding: 0 24px 16px; color: var(--nezumi); font-size: 14px; line-height: 20px; }
+
+.final { text-align: center; }
+.final h2 { margin-bottom: 24px; }
+
+.foot {
+  width: min(1080px, 100%);
+  margin: 0 auto;
+  padding: 24px 0 8px;
+  box-shadow: inset 0 1px 0 var(--rule);
+  font-size: 14px;
+  line-height: 20px;
+}
+.foot a { color: var(--nezumi); text-decoration: none; }
+.foot a:hover { color: var(--sumi); }
+
+/* 捲動進場：上移 32px 淡入，只播一次。 */
+.js .reveal { opacity: 0; transform: translateY(32px); transition: opacity 700ms var(--ease), transform 700ms var(--ease); }
+.js .reveal.in { opacity: 1; transform: none; }
 
 @keyframes preview-fall {
-  0% { top: -2.5rem; opacity: 0; }
-  6% { opacity: 1; }
-  88% { top: calc(100% - 4.6rem); opacity: 1; }
-  100% { top: calc(100% - 4.6rem); opacity: 0; }
+  0% { transform: translateY(-48px); opacity: 0; }
+  10% { opacity: 1; }
+  80% { transform: translateY(244px); opacity: 1; }
+  100% { transform: translateY(244px); opacity: 0; }
 }
 
 @media (max-width: 900px) {
-  .buy { grid-template-columns: 1fr; gap: 40px; padding-top: 24px; }
-  /* 手機：標題 → 預覽 → 表單 → 流程。 */
-  .buy-copy, .buy-preview { display: contents; }
-  .buy-head { order: 0; }
-  .preview { order: 1; }
-  .buy-form, .buy-done { order: 2; margin-top: 0; }
-  .steps { order: 3; }
-  .preview-field { height: 200px; }
-  .steps { margin-top: 0; }
+  .hero { grid-template-columns: 1fr; gap: 40px; }
+  .preview-field { height: 240px; }
+  @keyframes preview-fall {
+    0% { transform: translateY(-48px); opacity: 0; }
+    10% { opacity: 1; }
+    80% { transform: translateY(164px); opacity: 1; }
+    100% { transform: translateY(164px); opacity: 0; }
+  }
+  .benefits ul, .steps { grid-template-columns: 1fr; }
+  .tagline p { font-size: 30px; line-height: 36px; }
+  .buy > section { padding: 48px 0; }
 }
 @media (max-width: 560px) {
+  .hero h1 { font-size: 36px; line-height: 40px; }
+  .buy h2 { font-size: 24px; line-height: 32px; }
+  .tagline p { font-size: 20px; line-height: 28px; }
+  .buy-form { padding: 0 16px 24px; }
   .field-row { grid-template-columns: 1fr; }
-  .field-row > label { padding: 0 0 4px; }
-  .field-row > legend { float: none; width: auto; padding: 0 0 4px; }
+  .field-row > label { padding: 0 0 8px; }
+  .field-row > legend { float: none; width: auto; padding: 0 0 8px; }
   fieldset.field-row > div { margin-left: 0; }
-  .field-row:last-child > span { display: none; }
-  .word-grid { grid-template-columns: 1fr; gap: 6px; }
+  .field-row.submit-row > span { display: none; }
+  .word-grid { grid-template-columns: 1fr; gap: 8px; }
   .pay { width: 100%; }
+  .page-sponsor .bar { align-self: center; flex-wrap: nowrap; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .preview-word { top: 40%; }
+  .preview-word { animation: none; transform: translateY(96px); }
+  .js .reveal { transform: none; }
 }

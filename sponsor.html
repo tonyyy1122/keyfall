@@ -11,39 +11,103 @@
         var theme = saved && JSON.parse(saved).theme === 'dark' ? 'dark' : 'light'
         document.documentElement.setAttribute('data-theme', theme)
       } catch (e) {}
+      document.documentElement.classList.add('js')
     </script>
-    <meta name="description" content="認購鍵雨的贊助詞：你的品牌名或標語會混在落下的中文詞裡，玩家打完就會看到你的名字和連結。" />
     <title>認購贊助詞 — 鍵雨</title>
+    <meta name="description" content="把品牌名或標語放進鍵雨的中文字雨。玩家用輸入法打完，就會看到你的名字和連結。七天 US$9 起，審核不通過全額退款。" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="認購鍵雨贊助詞" />
+    <meta property="og:description" content="讓玩家親手打出你的品牌。七天 US$9 起，審核不通過全額退款。" />
+    <meta name="twitter:card" content="summary" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          { "@type": "Question", "name": "贊助詞有什麼限制？", "acceptedAnswer": { "@type": "Answer", "text": "每個詞 2 到 8 個繁體中文字，不含標點、英文或數字，最多三個。名稱最多 16 個字，連結要是 https 網址。" } },
+          { "@type": "Question", "name": "什麼時候開始出現？", "acceptedAnswer": { "@type": "Answer", "text": "付款後先審核，通過那一刻開始落下，天數從那時算起，到期自動停止。" } },
+          { "@type": "Question", "name": "多久會出現一次？", "acceptedAnswer": { "@type": "Answer", "text": "字雨裡每個新落下的詞，依難度有 14% 到 24% 的機率是贊助詞；同時有多位贊助時輪流分配。競速文章大約每八段出現一次。" } },
+          { "@type": "Question", "name": "英文模式會出現嗎？", "acceptedAnswer": { "@type": "Answer", "text": "不會。贊助詞只出現在中文的字雨與競速。" } },
+          { "@type": "Question", "name": "審核不通過怎麼辦？", "acceptedAnswer": { "@type": "Answer", "text": "透過 Stripe 全額退款到原本的付款方式。" } },
+          { "@type": "Question", "name": "會有收據嗎？", "acceptedAnswer": { "@type": "Answer", "text": "有。Stripe 會把收據寄到你付款時填的 Email。價格是含稅價，標多少就付多少。" } }
+        ]
+      }
+    </script>
   </head>
   <body class="page-sponsor">
+    <a class="skip" href="#main">跳到內容</a>
     <div class="shell">
-      <header class="bar">
+      <nav class="bar" aria-label="網站">
         <a class="brand" href="/" aria-label="回到鍵雨">
           <span class="seal" aria-hidden="true"></span>
           <span class="brand-name">鍵雨</span>
         </a>
         <div class="tools">
           <a class="tool" href="/">回到遊戲</a>
+          <a class="tool" href="/sponsor" aria-current="page">贊助</a>
         </div>
-      </header>
+      </nav>
 
-      <main class="buy">
-        <section class="buy-copy">
-          <div class="buy-head">
-            <h1>認購贊助詞</h1>
-            <p class="lede">
-              你的品牌名或標語會混在落下的中文詞裡，右上角蓋一枚「贊助」。玩家用輸入法把它打完，你的名字和連結就會留在「打過的詞」。
-            </p>
+      <main id="main" class="buy">
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">鍵雨贊助詞</p>
+            <h1>讓玩家<br />親手打出你的品牌</h1>
+            <p class="lede">你的品牌名或標語混在落下的中文詞裡。玩家用輸入法把它打完，你的名字和連結就留在側欄。七天 US$9 起。</p>
+            <div class="row">
+              <a class="primary" href="#order">認購贊助詞</a>
+            </div>
+            <p class="proof">審核不通過全額退款，付款由 Stripe 處理。</p>
           </div>
 
+          <div class="preview" aria-label="預覽">
+            <div class="preview-field">
+              <div class="fallword sponsored preview-word" id="preview-word">
+                <span class="badge">贊助</span><span class="glyphs" id="preview-text"></span>
+              </div>
+              <div class="ground"></div>
+            </div>
+            <div class="preview-log">
+              <span class="who" id="preview-who"></span>
+              <span class="said" id="preview-said"></span>
+            </div>
+            <p class="preview-cap">在遊戲裡會是這樣。下方填的內容會即時換上。</p>
+          </div>
+        </section>
+
+        <section class="tagline reveal" aria-label="標語">
+          <p id="tagline">打字的人，一定會讀到你。<br />每一個字，都是玩家親手打出來的。</p>
+        </section>
+
+        <section class="benefits reveal" aria-labelledby="benefits-title">
+          <h2 id="benefits-title">為什麼放在字雨裡</h2>
+          <ul>
+            <li><b>玩家一定會讀到</b>贊助詞要一個字一個字打完才會消去，不是滑過就算。</li>
+            <li><b>名字和連結留在側欄</b>打完後，「打過的詞」會寫上你的名稱，點詞就開你的網站。</li>
+            <li><b>先審核再上線</b>詞語和連結看過才開始落下，不通過全額退款。</li>
+          </ul>
+        </section>
+
+        <section class="how reveal" aria-labelledby="how-title">
+          <h2 id="how-title">三個步驟</h2>
+          <ol class="steps">
+            <li><b>填寫並付款</b>寫下名稱、詞語和連結，在 Stripe 的付款頁完成。</li>
+            <li><b>等待審核</b>我們確認詞語和連結沒有問題。</li>
+            <li><b>開始落下</b>混進中文字雨和競速文章，到期自動停止。</li>
+          </ol>
+        </section>
+
+        <section class="order reveal" id="order" aria-labelledby="order-title">
+          <h2 id="order-title">填寫贊助內容</h2>
+
           <div id="paid" class="buy-done" hidden>
-            <h2>付款完成</h2>
+            <h3>付款完成</h3>
             <p>我們會先看過詞語和連結，審核通過就開始落下，天數從那天算起。不通過會全額退款。收據寄到你付款時填的 Email。</p>
             <a class="primary" href="/">回到遊戲</a>
           </div>
@@ -86,38 +150,53 @@
               </div>
             </fieldset>
 
-            <div class="field-row">
+            <div class="field-row submit-row">
               <span></span>
               <div>
                 <button class="primary pay" id="pay" type="submit">付款</button>
-                <p class="help">用 Stripe 付款，美元計價。付款後先審核，不通過全額退款。</p>
+                <p class="help">含稅價，美元計價。付款後先審核，不通過全額退款。</p>
               </div>
             </div>
           </form>
         </section>
 
-        <aside class="buy-preview" aria-label="預覽">
-          <div class="preview">
-          <p class="preview-cap">在遊戲裡會是這樣</p>
-          <div class="field preview-field" data-script="zh">
-            <div class="fallword sponsored preview-word" id="preview-word">
-              <span class="badge">贊助</span><span class="glyphs" id="preview-text"></span>
-            </div>
-            <div class="ground"></div>
-          </div>
-          <div class="preview-log">
-            <span class="who" id="preview-who"></span>
-            <span class="said" id="preview-said"></span>
-          </div>
-          </div>
+        <section class="faq reveal" aria-labelledby="faq-title">
+          <h2 id="faq-title">常見問題</h2>
+          <details>
+            <summary>贊助詞有什麼限制？</summary>
+            <p>每個詞 2 到 8 個繁體中文字，不含標點、英文或數字，最多三個。名稱最多 16 個字，連結要是 https 網址。</p>
+          </details>
+          <details>
+            <summary>什麼時候開始出現？</summary>
+            <p>付款後先審核，通過那一刻開始落下，天數從那時算起，到期自動停止。</p>
+          </details>
+          <details>
+            <summary>多久會出現一次？</summary>
+            <p>字雨裡每個新落下的詞，依難度有 14% 到 24% 的機率是贊助詞；同時有多位贊助時輪流分配。競速文章大約每八段出現一次。</p>
+          </details>
+          <details>
+            <summary>英文模式會出現嗎？</summary>
+            <p>不會。贊助詞只出現在中文的字雨與競速。</p>
+          </details>
+          <details>
+            <summary>審核不通過怎麼辦？</summary>
+            <p>透過 Stripe 全額退款到原本的付款方式。</p>
+          </details>
+          <details>
+            <summary>會有收據嗎？</summary>
+            <p>有。Stripe 會把收據寄到你付款時填的 Email。價格是含稅價，標多少就付多少。</p>
+          </details>
+        </section>
 
-          <ol class="steps">
-            <li><b>付款</b>在 Stripe 的付款頁完成，收據寄到你的 Email。</li>
-            <li><b>審核</b>確認詞語和連結沒有問題。</li>
-            <li><b>落下</b>開始混進中文字雨和競速文章，到期自動停止。</li>
-          </ol>
-        </aside>
+        <section class="final reveal" aria-label="認購">
+          <h2>把你的品牌放進字雨</h2>
+          <a class="primary" href="#order">認購贊助詞</a>
+        </section>
       </main>
+
+      <footer class="foot">
+        <a href="/">回到鍵雨</a>
+      </footer>
     </div>
     <script type="module" src="/src/sponsor-page.ts"></script>
   </body>

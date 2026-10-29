@@ -1,0 +1,8 @@
+/* 404 頁 */
+.page-missing { user-select: auto; }
+.missing { width: min(680px, 100%); margin: 0 auto; padding: 96px 0 64px; }
+.missing a { text-decoration: none; display: inline-block; }
+@media (max-width: 560px) {
+  .missing { padding-top: 64px; }
+  .missing h1 { font-size: 36px; line-height: 40px; }
+}

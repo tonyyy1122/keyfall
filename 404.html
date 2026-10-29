@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <script>
+      try {
+        var saved = localStorage.getItem('keyfall-v2')
+        var theme = saved && JSON.parse(saved).theme === 'dark' ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', theme)
+      } catch (e) {}
+    </script>
+    <title>找不到這一頁 — 鍵雨</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="page-missing">
+    <div class="shell">
+      <nav class="bar" aria-label="網站">
+        <a class="brand" href="/" aria-label="回到鍵雨">
+          <span class="seal" aria-hidden="true"></span>
+          <span class="brand-name">鍵雨</span>
+        </a>
+      </nav>
+      <main class="missing">
+        <p class="eyebrow">404</p>
+        <h1>這個詞沒有落下來</h1>
+        <p class="lede">網址可能打錯了，或這一頁已經移走。回到遊戲重新開始一局吧。</p>
+        <div class="row">
+          <a class="primary" href="/">回到遊戲</a>
+          <a class="ghost" href="/sponsor">認購贊助詞</a>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="/src/missing.ts"></script>
+  </body>
+</html>

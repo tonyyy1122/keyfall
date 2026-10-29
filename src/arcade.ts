@@ -102,13 +102,13 @@ export class ArcadeGame {
         ? this.opts.difficulty === 'easy'
           ? '36px'
           : this.opts.difficulty === 'hard'
-            ? '26px'
+            ? '24px'
             : '30px'
         : this.opts.difficulty === 'easy'
-          ? '32px'
+          ? '30px'
           : this.opts.difficulty === 'hard'
-            ? '22px'
-            : '26px'
+            ? '20px'
+            : '24px'
     this.field.style.setProperty('--word-size', size)
     this.trySpawn()
     if (this.opts.difficulty === 'hard') this.trySpawn()

@@ -86,6 +86,79 @@ previewWord.addEventListener('animationiteration', () => {
 
 paintPay()
 paintPreview()
+mountReveals()
+mountTagline()
+if (params.has('paid') || params.has('cancel')) {
+  const order = document.querySelector<HTMLElement>('#order')!
+  order.classList.add('in')
+  order.scrollIntoView({ block: 'start' })
+}
+
+/** 各段落進到畫面時上移淡入，只播一次。 */
+function mountReveals(): void {
+  const sections = document.querySelectorAll<HTMLElement>('.reveal')
+  if (!('IntersectionObserver' in window)) {
+    sections.forEach((el) => el.classList.add('in'))
+    return
+  }
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue
+        entry.target.classList.add('in')
+        io.unobserve(entry.target)
+      }
+    },
+    { rootMargin: '0px 0px -10% 0px' },
+  )
+  sections.forEach((el) => io.observe(el))
+}
+
+/**
+ * 標語逐詞亮起：詞越過畫面 65% 高度那條線就變成全墨。
+ * 同一批越線的詞依閱讀順序錯開 60ms，捲動用 requestAnimationFrame 節流。
+ */
+function mountTagline(): void {
+  const host = document.querySelector<HTMLElement>('#tagline')
+  if (!host) return
+  const lines = host.innerHTML.split(/<br\s*\/?>/i).map((html) => {
+    const tmp = document.createElement('div')
+    tmp.innerHTML = html
+    return tmp.textContent ?? ''
+  })
+  const segment = (text: string): string[] => {
+    if (typeof Intl !== 'undefined' && 'Segmenter' in Intl) {
+      const seg = new Intl.Segmenter('zh-Hant', { granularity: 'word' })
+      return [...seg.segment(text)].map((part) => part.segment)
+    }
+    return [...text]
+  }
+  host.innerHTML = lines
+    .map((line) => segment(line.trim()).map((part) => `<span class="tw">${esc(part)}</span>`).join(''))
+    .join('<br />')
+  const words = [...host.querySelectorAll<HTMLElement>('.tw')]
+  let queued = false
+  const check = () => {
+    queued = false
+    const line = window.innerHeight * 0.65
+    let batch = 0
+    for (const word of words) {
+      if (word.classList.contains('on')) continue
+      if (word.getBoundingClientRect().top > line) break
+      word.style.transitionDelay = `${batch * 60}ms`
+      word.classList.add('on')
+      batch += 1
+    }
+    if (words.every((word) => word.classList.contains('on'))) window.removeEventListener('scroll', onScroll)
+  }
+  const onScroll = () => {
+    if (queued) return
+    queued = true
+    requestAnimationFrame(check)
+  }
+  window.addEventListener('scroll', onScroll, { passive: true })
+  check()
+}
 
 function readDraft(): SponsorDraft {
   const data = new FormData(form)

@@ -22,6 +22,7 @@ export default defineConfig({
       input: {
         main: resolve(import.meta.dirname, 'index.html'),
         sponsor: resolve(import.meta.dirname, 'sponsor.html'),
+        missing: resolve(import.meta.dirname, '404.html'),
       },
     },
   },

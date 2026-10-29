@@ -30,30 +30,31 @@ const CSS = `
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #121211; --sheet: #191918; --sumi: #e7e6e1; --nezumi: #a4a49c;
-    --rule: #2c2c2a; --aisumi: #d7dde6; --shu: #e09a96; --ink-on-aisumi: #121211;
+    --paper: #181818; --sheet: #1f1f1f; --sumi: #e7e6e1; --nezumi: #a4a49c;
+    --rule: #313131; --aisumi: #d7dde6; --shu: #e09a96; --ink-on-aisumi: #181818;
     color-scheme: dark;
   }
 }
 * { box-sizing: border-box; }
 body {
   margin: 0; background: var(--paper); color: var(--sumi);
-  font: 16px/1.7 "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  font: 16px/24px "Geist", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
 }
-main { width: min(880px, 100%); margin: 0 auto; padding: 40px 20px 64px; }
-h1 { margin: 0; font: 500 2rem/1.3 "Noto Serif TC", "Songti TC", serif; letter-spacing: 0.04em; }
-h2 { margin: 40px 0 0; padding-bottom: 8px; border-bottom: 1px solid var(--sumi); font-size: 1rem; font-weight: 500; }
-p { margin: 12px 0 0; max-width: 36rem; }
+main { width: min(880px, 100%); margin: 0 auto; padding: 40px 16px 64px; }
+h1 { margin: 0; font-size: 36px; line-height: 40px; font-weight: 600; }
+h2 { margin: 40px 0 0; padding-bottom: 8px; box-shadow: inset 0 -1px 0 var(--sumi); font-size: 18px; line-height: 28px; font-weight: 600; }
+p { margin: 12px 0 0; max-width: 576px; text-wrap: pretty; }
 .quiet { color: var(--nezumi); }
 a { color: inherit; }
-.note { margin-top: 20px; padding: 10px 14px; border-left: 2px solid var(--aisumi); background: var(--sheet); }
-.back { display: inline-block; margin-top: 28px; padding: 10px 18px; border: 1px solid var(--sumi); border-radius: 2px; text-decoration: none; font-weight: 500; }
-.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 20px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
-.who { font-weight: 500; }
-.words { font: 500 1.15rem/1.5 "Noto Serif TC", "Songti TC", serif; letter-spacing: 0.12em; }
-.meta { color: var(--nezumi); font-size: 0.85rem; }
+.note { margin-top: 24px; padding: 12px 16px; border: 1px solid var(--aisumi); border-radius: 8px; background: var(--sheet); }
+.back { display: inline-block; margin-top: 32px; padding: 8px 12px; border: 1px solid var(--sumi); border-radius: 8px; text-decoration: none; font-weight: 600; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 24px; padding: 16px 0; box-shadow: inset 0 -1px 0 var(--rule); }
+.who { font-weight: 600; }
+.words { font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: 0.08em; }
+.meta { color: var(--nezumi); font-size: 14px; line-height: 20px; }
 .acts { display: flex; gap: 8px; align-items: start; }
-button { font: inherit; padding: 6px 14px; border-radius: 2px; cursor: pointer; }
+button { font: inherit; font-weight: 600; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: background-color 300ms cubic-bezier(0.22, 1, 0.36, 1); }
+button:active { transform: scale(0.98); }
 .ok { background: var(--aisumi); color: var(--ink-on-aisumi); border: 1px solid var(--aisumi); }
 .no { background: transparent; color: var(--shu); border: 1px solid var(--shu); }
 .empty { color: var(--nezumi); padding: 16px 0; }
@@ -63,7 +64,8 @@ button { font: inherit; padding: 6px 14px; border-radius: 2px; cursor: pointer; 
 function shell(title: string, body: string): string {
   return `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
-<title>${esc(title)}｜鍵雨</title><style>${CSS}</style></head><body><main>${body}</main></body></html>`
+<title>${esc(title)}｜鍵雨</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600&family=Noto+Sans+TC:wght@400;600&display=swap"><style>${CSS}</style></head><body><main>${body}</main></body></html>`
 }
 
 export function messagePage(title: string, message: string, back: string): string {

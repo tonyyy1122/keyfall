@@ -4,7 +4,11 @@ name = "keyfall"
 main = "worker/index.ts"
 compatibility_date = "2026-10-01"
 
-routes = [ { pattern = "keyfall.stonedemo.com", custom_domain = true } ]
+# stonedemo.com 有一條 *.stonedemo.com/* 指向 nail-saas，所以要再加一條更精確的路由蓋過它（jobs 子網域也是這樣做）。
+routes = [
+  { pattern = "keyfall.stonedemo.com", custom_domain = true },
+  { pattern = "keyfall.stonedemo.com/*", zone_name = "stonedemo.com" },
+]
 
 [assets]
 directory = "./dist"

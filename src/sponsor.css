@@ -1,0 +1,160 @@
+/* 認購贊助詞頁。沿用 style.css 的色票與元件，只補這一頁的版面。 */
+.page-sponsor { user-select: auto; }
+.page-sponsor .shell { min-height: 100dvh; }
+.page-sponsor .brand { text-decoration: none; color: inherit; }
+.page-sponsor .tool { text-decoration: none; }
+
+.buy {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+  gap: 72px;
+  align-items: start;
+  padding: 36px 0 64px;
+}
+.buy h1 { font-size: clamp(2.4rem, 5vw, 3.4rem); }
+.buy .lede { max-width: 32rem; }
+
+.buy-form { margin-top: 36px; border-top: 1px solid var(--rule); }
+.field-row {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 0 20px;
+  margin: 0;
+  padding: 18px 0 14px;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  min-width: 0;
+}
+.field-row:last-child { border-bottom: 0; padding-top: 24px; }
+.field-row > label,
+.field-row > legend {
+  padding: 8px 0 0;
+  color: var(--nezumi);
+  font-size: 0.9rem;
+}
+/* legend 不吃 grid，要用 float 讓它排進第一欄。 */
+.field-row > legend { float: left; width: 4.5rem; margin-right: 20px; }
+fieldset.field-row { display: block; }
+fieldset.field-row > div { margin-left: calc(4.5rem + 20px); }
+
+.buy-form input:not([type="radio"]) {
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--sumi);
+  border-radius: 0;
+  padding: 6px 0;
+  font-size: 1.05rem;
+}
+.buy-form input:not([type="radio"]):focus { outline: none; border-bottom: 2px solid var(--aisumi); padding-bottom: 5px; }
+.buy-form input::placeholder { color: var(--nezumi); opacity: 0.55; }
+.word-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.buy-form .word-grid input {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 1.3rem;
+  letter-spacing: 0.12em;
+}
+.help { margin: 8px 0 0; color: var(--nezumi); font-size: 0.82rem; line-height: 1.6; }
+.err { margin: 6px 0 0; color: var(--shu); font-size: 0.85rem; }
+.err:empty { display: none; }
+.field-row.bad input:not([type="radio"]) { border-bottom: 2px solid var(--shu); padding-bottom: 5px; }
+
+.plans { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--rule); }
+.plan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+.plan + .plan { border-left: 1px solid var(--rule); }
+.plan input { position: absolute; opacity: 0; pointer-events: none; }
+.plan:hover { background: color-mix(in srgb, var(--sumi) 3%, transparent); }
+.plan:has(input:checked) { box-shadow: inset 3px 0 0 var(--aisumi); }
+.plan:has(input:focus-visible) { outline: 2px solid var(--aisumi); outline-offset: 2px; }
+.plan-days { font-weight: 500; }
+.plan-price { font-family: var(--serif); font-size: 1.5rem; font-weight: 500; line-height: 1.3; }
+
+.pay { min-width: 11rem; padding: 12px 22px; font-size: 1.05rem; }
+.pay:disabled { opacity: 0.6; cursor: progress; }
+.buy-note {
+  margin: 20px 0 0;
+  padding: 10px 14px;
+  border-left: 2px solid var(--aisumi);
+  background: var(--sheet);
+}
+
+.buy-done { margin-top: 36px; padding-top: 22px; border-top: 1px solid var(--sumi); max-width: 32rem; }
+.buy-done p { margin: 10px 0 22px; color: var(--nezumi); }
+.buy-done .primary { display: inline-block; text-decoration: none; }
+
+/* 預覽：跟遊戲同一張橫線稿紙，詞從上面落到紅線。 */
+.buy-preview { position: sticky; top: 24px; }
+.preview-cap { margin: 0 0 10px; color: var(--nezumi); font-size: 0.85rem; }
+.preview-field { height: 320px; flex: none; }
+.preview-word {
+  left: 16%;
+  animation: preview-fall 6.5s linear infinite;
+}
+.preview-log {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.preview-log .who { width: 100%; color: var(--shu); font-size: 0.75rem; }
+.preview-log .said.linked { border-bottom: 1px solid var(--shu); }
+
+.steps { list-style: none; counter-reset: step; margin: 32px 0 0; padding: 0; }
+.steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  padding: 10px 0;
+  border-top: 1px solid var(--rule);
+  color: var(--nezumi);
+  font-size: 0.9rem;
+}
+.steps li::before {
+  content: counter(step);
+  grid-row: span 2;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  color: var(--sumi);
+  line-height: 1.5;
+}
+.steps b { display: block; color: var(--sumi); font-weight: 500; }
+
+@keyframes preview-fall {
+  0% { top: -2.5rem; opacity: 0; }
+  6% { opacity: 1; }
+  88% { top: calc(100% - 4.6rem); opacity: 1; }
+  100% { top: calc(100% - 4.6rem); opacity: 0; }
+}
+
+@media (max-width: 900px) {
+  .buy { grid-template-columns: 1fr; gap: 40px; padding-top: 24px; }
+  /* 手機：標題 → 預覽 → 表單 → 流程。 */
+  .buy-copy, .buy-preview { display: contents; }
+  .buy-head { order: 0; }
+  .preview { order: 1; }
+  .buy-form, .buy-done { order: 2; margin-top: 0; }
+  .steps { order: 3; }
+  .preview-field { height: 200px; }
+  .steps { margin-top: 0; }
+}
+@media (max-width: 560px) {
+  .field-row { grid-template-columns: 1fr; }
+  .field-row > label { padding: 0 0 4px; }
+  .field-row > legend { float: none; width: auto; padding: 0 0 4px; }
+  fieldset.field-row > div { margin-left: 0; }
+  .field-row:last-child > span { display: none; }
+  .word-grid { grid-template-columns: 1fr; gap: 6px; }
+  .pay { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .preview-word { top: 40%; }
+}

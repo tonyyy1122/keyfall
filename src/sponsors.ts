@@ -50,6 +50,29 @@ export const SPONSOR_CHANCE: Record<Difficulty, number> = {
   hard: 0.24,
 }
 
+let active: readonly Sponsor[] = SPONSORS
+
+/**
+ * 換上 Stripe 付款、審核通過的贊助。只要有一筆正式贊助，範例就收起來。
+ * 沒有（或 /api/sponsors 連不上）時維持範例。
+ */
+export function useSponsors(live: readonly Sponsor[]): void {
+  const clean = live.filter((item) => auditSponsors([item]).length === 0)
+  active = clean.length > 0 ? clean : SPONSORS
+}
+
+/** 讀正在落下的正式贊助。連不上（例如只開了 npm run dev）就維持範例。 */
+export async function loadLiveSponsors(): Promise<void> {
+  try {
+    const res = await fetch('/api/sponsors', { signal: AbortSignal.timeout(4000) })
+    if (!res.ok) return
+    const list: unknown = await res.json()
+    if (Array.isArray(list)) useSponsors(list as Sponsor[])
+  } catch {
+    // 留著範例
+  }
+}
+
 export interface SponsorRoll {
   sponsor: Sponsor
   text: string
@@ -58,7 +81,7 @@ export interface SponsorRoll {
 export function rollSponsor(
   rng: () => number,
   chance: number,
-  sponsors: readonly Sponsor[] = SPONSORS,
+  sponsors: readonly Sponsor[] = active,
 ): SponsorRoll | null {
   if (sponsors.length === 0 || chance <= 0 || rng() >= chance) return null
   const total = sponsors.reduce((sum, item) => sum + Math.max(0, item.weight), 0)
@@ -78,7 +101,7 @@ export function rollSponsor(
   return { sponsor: picked, text }
 }
 
-export function sponsorForText(text: string, sponsors: readonly Sponsor[] = SPONSORS): Sponsor | null {
+export function sponsorForText(text: string, sponsors: readonly Sponsor[] = active): Sponsor | null {
   for (const sponsor of sponsors) {
     if (sponsor.words.includes(text)) return sponsor
   }

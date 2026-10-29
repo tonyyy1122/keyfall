@@ -20,7 +20,7 @@ npm install
 npm run dev
 ```
 
-然後打開 [http://127.0.0.1:47321](http://127.0.0.1:47321)。
+然後打開 [http://127.0.0.1:47321](http://127.0.0.1:47321)。只開這個時，打賞和認購按下去會失敗，贊助詞用範例；要試付款，見下方「Stripe 付款」。
 
 ## 建置
 
@@ -29,7 +29,7 @@ npm run build
 npm run preview
 ```
 
-`npm test` 會檢查計分、選詞、中文題庫和贊助詞設定。
+`npm test` 會檢查計分、選詞、中文題庫、贊助詞設定、認購表單規則和 Stripe 簽章驗證。
 
 ## 怎麼玩
 
@@ -49,7 +49,7 @@ npm run preview
 
 ## 贊助詞
 
-有些落下的中文詞是品牌或標語，左上角有一枚「贊助」標記。打完之後會出現在左側，並帶上贊助者的連結。英文模式不會出現贊助詞。
+有些落下的中文詞是品牌或標語，右上角有一枚「贊助」標記。打完之後會出現在左側，並帶上贊助者的連結。英文模式不會出現贊助詞。
 
 編輯 `src/sponsors.ts` 的 `SPONSORS`：
 
@@ -61,6 +61,14 @@ npm run preview
 - `example`：範例贊助請留 `true`，側欄會寫成「範例，名稱」。正式贊助拿掉這個欄位。
 
 `SPONSOR_CHANCE` 是每種難度抽到贊助詞的機率。目前附上的青山茶行、雨街書店、島嶼鍵盤都是標明的範例，連結指向 example.com。
+
+這份清單只是預設。遊戲開始時會讀 `/api/sponsors`，只要有一筆付款並審核通過、還沒到期的贊助，範例就整份收起來，換成正式贊助。讀不到時維持範例。
+
+### 讓品牌自己認購
+
+`/sponsor` 是認購頁：填名稱、最多三個詞、連結，選天數，付款。右邊會用遊戲裡的稿紙即時預覽詞語落下的樣子。表單規則在 `src/sponsor-form.ts`，前端和 Worker 用同一份，所以畫面上不會出現後端才擋下的錯誤。
+
+付款後狀態是「待審核」。到 `/admin`（帳號隨意，密碼是 `ADMIN_KEY`）按「通過」就開始落下，天數從那一刻起算，到期自動停止；按「退款退回」會透過 Stripe 全額退款。
 
 ## 廣告版位
 
@@ -75,10 +83,33 @@ npm run preview
 
 ## 請我喝杯咖啡
 
-右下角按鈕的網址集中在 `src/monetization.ts` 的 `coffee`：
+右側直式欄最下方有三格金額。按一格就會開 Stripe 付款頁，付完回到遊戲會看到道謝。金額、按鈕文字和付款頁上的商品名稱在 `src/monetization.ts` 的 `tip`，單位是美分。
 
-- `username`：你的 Buy Me a Coffee 使用者名稱。
-- `url`：完整網址，例如 `https://buymeacoffee.com/your-name`。
-- `label`：按鈕文字。
+## Stripe 付款
 
-現在放的是佔位網址。改完重新整理即可，不用改其他檔案。
+打賞和贊助都透過 `worker/index.ts` 建立 Stripe Checkout，用 `price_data` 直接帶金額，不必先在 Stripe 後台建商品。整個網站（`dist/` 的靜態檔加上 `/api/*`、`/admin`）是同一支 Cloudflare Worker，資料存在 D1，資料表在 `schema.sql`。
+
+| 路徑 | 用途 |
+| --- | --- |
+| `POST /api/tip` | 打賞，轉到 Stripe 付款頁 |
+| `POST /api/sponsor` | 認購贊助詞，先存成未付款，再轉到付款頁 |
+| `GET /api/sponsors` | 正在落下的贊助 |
+| `POST /api/stripe/webhook` | 付款完成改成待審核；付款頁過期就刪掉未付款的那筆 |
+| `/admin` | 審核頁 |
+
+### 本機試付款（Stripe 沙盒）
+
+1. 把 `.dev.vars.example` 複製成 `.dev.vars`，填沙盒的 `sk_test_...` 和一組 `ADMIN_KEY`。
+2. `npm run db:init:local`
+3. `npm run build`，再 `npm run dev:api`，打開 [http://127.0.0.1:8787](http://127.0.0.1:8787)。
+4. 另開一個終端機跑 `stripe listen --forward-to localhost:8787/api/stripe/webhook`，把印出的 `whsec_...` 填進 `.dev.vars` 的 `STRIPE_WEBHOOK_SECRET`，重開 `dev:api`。
+5. 用測試卡 4242 4242 4242 4242 付款。
+
+改前端時也可以同時開 `npm run dev`，`/api` 和 `/admin` 會轉給 8787。
+
+### 部署
+
+1. `npx wrangler d1 create keyfall`，把 `database_id` 貼進 `wrangler.toml`，再 `npm run db:init`。
+2. `npx wrangler secret put STRIPE_SECRET_KEY`、`STRIPE_WEBHOOK_SECRET`、`ADMIN_KEY`。若帳號開了 Managed Payments、需要稅碼，再設 `STRIPE_TAX_CODE`。
+3. `npm run deploy`
+4. 在 Stripe 後台新增 webhook，網址 `https://你的網域/api/stripe/webhook`，事件選 `checkout.session.completed`、`checkout.session.async_payment_succeeded`、`checkout.session.expired`。

@@ -8,7 +8,7 @@
 .buy { width: min(1080px, 100%); margin: 0 auto; }
 .buy > section { padding: 64px 0; }
 .buy > section + section { box-shadow: inset 0 1px 0 var(--rule); }
-.buy h2 { font-size: 30px; line-height: 36px; }
+.buy h2 { font-size: 36px; line-height: 40px; }
 
 /* 開場 */
 .hero {
@@ -21,7 +21,7 @@
 .hero h1 { font-size: 48px; line-height: 1; padding-bottom: 8px; }
 .hero .lede { max-width: 520px; }
 .hero .row { margin-top: 32px; }
-.proof { margin: 12px 0 0; color: var(--nezumi); font-size: 14px; line-height: 20px; }
+.proof { margin: 12px 0 0; color: var(--nezumi); font-size: 16px; line-height: 24px; }
 
 .preview { min-width: 0; }
 .preview-field {
@@ -35,7 +35,7 @@
 .preview-field .ground { bottom: 16px; }
 .preview-word {
   left: 16%;
-  font-size: 30px;
+  font-size: 36px;
   animation: preview-fall 6500ms var(--ease) infinite;
 }
 .preview-log {
@@ -48,9 +48,9 @@
   border-radius: var(--r-card);
   background: var(--sheet);
 }
-.preview-log .who { width: 100%; color: var(--shu); font-size: 12px; line-height: 16px; }
+.preview-log .who { width: 100%; color: var(--shu); font-size: 14px; line-height: 20px; }
 .preview-log .said.linked { text-decoration: underline; text-decoration-color: var(--shu); text-underline-offset: 4px; }
-.preview-cap { margin: 8px 0 0; color: var(--nezumi); font-size: 12px; line-height: 16px; }
+.preview-cap { margin: 8px 0 0; color: var(--nezumi); font-size: 14px; line-height: 20px; }
 
 /* 標語：每個詞捲到時從淡墨變成全墨。 */
 .tagline p {
@@ -83,11 +83,11 @@
   border-radius: var(--r-card);
   background: var(--sheet);
   color: var(--nezumi);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 16px;
+  line-height: 24px;
 }
 .benefits b,
-.steps b { display: block; margin-bottom: 8px; color: var(--sumi); font-size: 18px; line-height: 28px; font-weight: 600; }
+.steps b { display: block; margin-bottom: 8px; color: var(--sumi); font-size: 20px; line-height: 28px; font-weight: 600; }
 
 /* 三個步驟：真的有先後，所以標號。 */
 .steps {
@@ -110,8 +110,8 @@
   border-radius: var(--r-btn);
   background: var(--aisumi);
   color: var(--ink-on-aisumi);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 16px;
+  line-height: 24px;
   font-weight: 600;
 }
 
@@ -138,8 +138,8 @@
 .field-row > legend {
   padding: 8px 0 0;
   color: var(--nezumi);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 16px;
+  line-height: 24px;
   font-weight: 600;
 }
 /* legend 不吃 grid，用 float 排進第一欄。 */
@@ -154,16 +154,16 @@ fieldset.field-row > div { margin-left: 104px; }
   border: 1px solid var(--rule);
   border-radius: var(--r-btn);
   padding: 8px 12px;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 18px;
+  line-height: 28px;
 }
 .buy-form input:not([type="radio"]):hover { border-color: var(--nezumi); }
 .buy-form input:not([type="radio"]):focus { outline: none; border-color: var(--aisumi); box-shadow: 0 0 0 1px var(--aisumi); }
 .buy-form input::placeholder { color: var(--nezumi); opacity: 0.6; }
 .word-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.buy-form .word-grid input { font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: 0.08em; }
-.help { margin: 8px 0 0; color: var(--nezumi); font-size: 12px; line-height: 16px; }
-.err { margin: 8px 0 0; color: var(--shu); font-size: 14px; line-height: 20px; }
+.buy-form .word-grid input { font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: 0.08em; }
+.help { margin: 8px 0 0; color: var(--nezumi); font-size: 14px; line-height: 20px; }
+.err { margin: 8px 0 0; color: var(--shu); font-size: 16px; line-height: 24px; }
 .err:empty { display: none; }
 .field-row.bad input:not([type="radio"]) { border-color: var(--shu); box-shadow: 0 0 0 1px var(--shu); }
 
@@ -182,8 +182,8 @@ fieldset.field-row > div { margin-left: 104px; }
 .plan:hover { border-color: var(--nezumi); }
 .plan:has(input:checked) { border-color: var(--aisumi); box-shadow: 0 0 0 1px var(--aisumi); }
 .plan:has(input:focus-visible) { outline: 2px solid var(--aisumi); outline-offset: 2px; }
-.plan-days { color: var(--nezumi); font-size: 14px; line-height: 20px; font-weight: 600; }
-.plan-price { font-size: 24px; line-height: 32px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.plan-days { color: var(--nezumi); font-size: 16px; line-height: 24px; font-weight: 600; }
+.plan-price { font-size: 30px; line-height: 36px; font-weight: 600; font-variant-numeric: tabular-nums; }
 
 .pay { min-width: 176px; }
 .pay:disabled { opacity: 0.6; cursor: progress; }
@@ -193,8 +193,8 @@ fieldset.field-row > div { margin-left: 104px; }
   border: 1px solid var(--aisumi);
   border-radius: var(--r-btn);
   background: var(--raise);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 16px;
+  line-height: 24px;
 }
 .buy-done {
   margin-top: 32px;
@@ -224,7 +224,7 @@ fieldset.field-row > div { margin-left: 104px; }
 .faq summary::after { content: "+"; color: var(--nezumi); transition: transform 300ms var(--ease); }
 .faq details[open] summary::after { transform: rotate(45deg); }
 .faq summary:focus-visible { outline: 2px solid var(--aisumi); outline-offset: 2px; border-radius: var(--r-card); }
-.faq details p { margin: 0; padding: 0 24px 16px; color: var(--nezumi); font-size: 14px; line-height: 20px; }
+.faq details p { margin: 0; padding: 0 24px 16px; color: var(--nezumi); font-size: 16px; line-height: 24px; }
 
 .final { text-align: center; }
 .final h2 { margin-bottom: 24px; }
@@ -234,8 +234,8 @@ fieldset.field-row > div { margin-left: 104px; }
   margin: 0 auto;
   padding: 24px 0 8px;
   box-shadow: inset 0 1px 0 var(--rule);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 16px;
+  line-height: 24px;
 }
 .foot a { color: var(--nezumi); text-decoration: none; }
 .foot a:hover { color: var(--sumi); }
@@ -261,13 +261,13 @@ fieldset.field-row > div { margin-left: 104px; }
     100% { transform: translateY(164px); opacity: 0; }
   }
   .benefits ul, .steps { grid-template-columns: 1fr; }
-  .tagline p { font-size: 30px; line-height: 36px; }
+  .tagline p { font-size: 36px; line-height: 40px; }
   .buy > section { padding: 48px 0; }
 }
 @media (max-width: 560px) {
   .hero h1 { font-size: 36px; line-height: 40px; }
-  .buy h2 { font-size: 24px; line-height: 32px; }
-  .tagline p { font-size: 20px; line-height: 28px; }
+  .buy h2 { font-size: 30px; line-height: 36px; }
+  .tagline p { font-size: 24px; line-height: 32px; }
   .buy-form { padding: 0 16px 24px; }
   .field-row { grid-template-columns: 1fr; }
   .field-row > label { padding: 0 0 8px; }

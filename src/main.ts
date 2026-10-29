@@ -65,7 +65,10 @@ attachIme(ime, {
   },
   onCommit: (text) => {
     imePreview.textContent = ''
-    if (phase !== 'playing' || prefs.script !== 'zh') return
+    if (prefs.script !== 'zh') return
+    // 倒數中就送出字，直接開局並算進去，不必等 3、2、1。
+    if (phase === 'countdown') skipCountdown()
+    if (phase !== 'playing') return
     session?.commitText(text)
   },
 })
@@ -114,7 +117,7 @@ window.addEventListener('keydown', onKey)
 window.addEventListener('keyup', syncCaps)
 document.addEventListener('pointerdown', (event) => {
   sfx.unlock()
-  if (prefs.script !== 'zh' || phase !== 'playing') return
+  if (prefs.script !== 'zh' || (phase !== 'playing' && phase !== 'countdown')) return
   const target = event.target
   if (!(target instanceof Element)) return
   if (target.closest('button, a, input, textarea, select')) return
@@ -194,7 +197,7 @@ function setPhase(next: Phase): void {
 
 function focusIme(): void {
   if (prefs.script !== 'zh') return
-  if (phase !== 'playing' && phase !== 'paused') return
+  if (phase !== 'countdown' && phase !== 'playing' && phase !== 'paused') return
   ime.focus()
 }
 
@@ -310,6 +313,8 @@ function startGame(): void {
   setPhase('countdown')
   paintHud(hud, session.stats, prefs.mode, prefs.script)
   document.title = `鍵雨 — ${MODE_COPY[prefs.mode].label}`
+  // 一開局就把游標放進組字欄，倒數時就能開始打。
+  focusIme()
   runCountdown()
 }
 
@@ -495,9 +500,29 @@ function onKey(event: KeyboardEvent): void {
   }
 
   if (phase === 'countdown') {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      showMenu()
+      return
+    }
+    // 中文：按鍵交給組字欄，送出字時才開局（見 onCommit）。
+    if (prefs.script === 'zh') {
+      if (event.key === 'Enter') {
+        event.preventDefault()
+        skipCountdown()
+      }
+      return
+    }
     event.preventDefault()
-    if (event.key === 'Escape') showMenu()
-    else if (event.key === 'Enter' || event.key === ' ') skipCountdown()
+    if (event.key === 'Enter' || event.key === ' ') {
+      skipCountdown()
+      return
+    }
+    // 英文：倒數中打第一個字母就直接開局，這一鍵也算數。
+    if (event.key.length === 1) {
+      skipCountdown()
+      session?.key(event.key)
+    }
     return
   }
 

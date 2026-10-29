@@ -100,15 +100,15 @@ export class ArcadeGame {
     const size =
       this.script === 'zh'
         ? this.opts.difficulty === 'easy'
+          ? '48px'
+          : this.opts.difficulty === 'hard'
+            ? '30px'
+            : '36px'
+        : this.opts.difficulty === 'easy'
           ? '36px'
           : this.opts.difficulty === 'hard'
             ? '24px'
             : '30px'
-        : this.opts.difficulty === 'easy'
-          ? '30px'
-          : this.opts.difficulty === 'hard'
-            ? '20px'
-            : '24px'
     this.field.style.setProperty('--word-size', size)
     this.trySpawn()
     if (this.opts.difficulty === 'hard') this.trySpawn()

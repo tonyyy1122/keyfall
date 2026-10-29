@@ -139,6 +139,11 @@ export function menuHtml(mode: Mode, difficulty: Difficulty, scores: readonly Sc
       <p class="eyebrow">${eyebrow}</p>
       <h1>鍵雨</h1>
       <p class="lede">${lede}</p>
+      <div class="row start-row">
+        <button class="primary start" type="button" data-act="start">開始遊戲<kbd>Enter</kbd></button>
+        <button class="ghost" type="button" data-act="help">怎麼玩</button>
+        <p class="best">${best ? `最佳 ${formatInt(best.score)}` : '這個組合還沒有紀錄'}</p>
+      </div>
       <div class="lang" role="radiogroup" aria-label="打字語言">
         <button type="button" data-act="lang" data-script="zh" aria-pressed="${script === 'zh'}">中文</button>
         <button type="button" data-act="lang" data-script="en" aria-pressed="${script === 'en'}">English</button>
@@ -148,11 +153,6 @@ export function menuHtml(mode: Mode, difficulty: Difficulty, scores: readonly Sc
       <div class="diff-block">
         <div class="diff" role="radiogroup" aria-label="難度">${diffs}</div>
         <p class="diff-hint">${difficultyHint(script, difficulty)}</p>
-      </div>
-      <div class="row">
-        <button class="primary" type="button" data-act="start">開始遊戲</button>
-        <button class="ghost" type="button" data-act="help">怎麼玩</button>
-        <p class="best">${best ? `最佳 ${formatInt(best.score)}` : '這個組合還沒有紀錄'}</p>
       </div>
       <section class="board">
         <div class="board-head">

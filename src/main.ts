@@ -6,11 +6,12 @@ import { Sfx } from './audio.ts'
 import { attachIme } from './ime.ts'
 import { MODE_COPY } from './config.ts'
 import { cycleDifficulty, formatAccuracy, formatInt, formatWpm, otherMode } from './logic.ts'
-import { coffee } from './monetization.ts'
+import { loadLiveSponsors } from './sponsors.ts'
 import { SprintGame } from './sprint.ts'
 import { loadPersisted, savePersisted, submitScore } from './storage.ts'
 import type { Difficulty, EndReason, LiveStats, Mode, Phase, Script } from './types.ts'
 import { startSky } from './sky.ts'
+import { mountTip, takeTipReturn } from './tip.ts'
 import {
   countdownHtml,
   fillHud,
@@ -43,7 +44,7 @@ const logEmpty = document.querySelector<HTMLParagraphElement>('#log-empty')!
 const imeDock = document.querySelector<HTMLDivElement>('#ime-dock')!
 const ime = document.querySelector<HTMLInputElement>('#ime')!
 const imePreview = document.querySelector<HTMLParagraphElement>('#ime-preview')!
-const coffeeLink = document.querySelector<HTMLAnchorElement>('#coffee')!
+const tipForm = document.querySelector<HTMLFormElement>('#tip')!
 
 let phase: Phase = 'menu'
 let helpOpen = false
@@ -56,7 +57,8 @@ fillHud(hud)
 paintMute(muteBtn, prefs.mute)
 applyTheme(prefs.theme)
 mountAds()
-mountCoffee()
+mountTip(tipForm)
+void loadLiveSponsors()
 attachIme(ime, {
   onCompose: (text) => {
     imePreview.textContent = text ? `組字中 ${text}` : ''
@@ -69,6 +71,7 @@ attachIme(ime, {
 })
 startSky(sky)
 showMenu()
+if (takeTipReturn()) showToast('收到你的咖啡了，謝謝。', true)
 
 home.addEventListener('click', () => {
   sfx.unlock()
@@ -120,18 +123,6 @@ document.addEventListener('pointerdown', (event) => {
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && phase === 'playing') pause(true)
 })
-
-function mountCoffee(): void {
-  const href = httpUrl(coffee.url)
-  coffeeLink.textContent = coffee.label
-  coffeeLink.title = coffee.username
-  if (!href) {
-    coffeeLink.hidden = true
-    return
-  }
-  coffeeLink.hidden = false
-  coffeeLink.href = href
-}
 
 function httpUrl(url: string | undefined): string | null {
   if (!url) return null
@@ -405,10 +396,10 @@ function finish(stats: LiveStats, reason: EndReason): void {
   live.textContent = `${reason === 'time' ? '時間到' : '生命用盡'}。分數 ${formatInt(stats.score)}，${speedName} ${formatWpm(stats.wpm)}，準確率 ${formatAccuracy(stats.accuracy)}。${place}`
 }
 
-function showToast(text: string): void {
+function showToast(text: string, linger = false): void {
   document.querySelector('.toast')?.remove()
   const node = document.createElement('div')
-  node.className = 'toast'
+  node.className = linger ? 'toast linger' : 'toast'
   node.textContent = text
   document.body.append(node)
   node.addEventListener('animationend', () => node.remove())

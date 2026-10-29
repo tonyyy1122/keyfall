@@ -265,21 +265,43 @@ body[data-phase="over"] #log {
   border-left: 0;
   padding: 0 0 4px;
 }
-.coffee {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  background: transparent;
-  color: var(--sumi);
-  font-weight: 500;
+/* 打賞：三格原稿紙，金額寫在格子裡。 */
+.tip { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
+.tip-title { margin: 0; font-weight: 500; font-size: 0.95rem; }
+.tip-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   border: 1px solid var(--sumi);
-  border-radius: 2px;
-  padding: 8px 10px;
-  text-align: center;
-  margin-top: auto;
 }
-.coffee:hover { background: var(--sumi); color: var(--sheet); }
+.tip-cell {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--sheet);
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 1.45rem;
+  font-variant-numeric: lining-nums;
+  line-height: 1;
+}
+.tip-cell + .tip-cell { border-left: 1px solid var(--rule); }
+.tip-cell:hover { background: var(--aisumi); color: var(--ink-on-aisumi); }
+.tip-cell:focus-visible { outline-offset: -4px; outline-color: var(--ink-on-aisumi); background: var(--aisumi); color: var(--ink-on-aisumi); }
+.tip-note { margin: 0; color: var(--nezumi); font-size: 0.75rem; }
+.tip-sponsor {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule);
+  color: var(--shu);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+.tip-sponsor:hover { text-decoration: underline; text-underline-offset: 3px; }
+body[data-phase="playing"] .tip-sponsor,
+body[data-phase="countdown"] .tip-sponsor { display: none; }
 .ad-slot.placeholder {
   border: 1px solid var(--rule);
   border-radius: 0;
@@ -661,6 +683,7 @@ body[data-caps="on"][data-script="en"][data-mode="sprint"][data-diff="hard"] .ca
   animation: toast 0.9s ease forwards;
   pointer-events: none;
 }
+.toast.linger { animation-duration: 3.2s; }
 .sr {
   position: absolute;
   width: 1px;
@@ -722,7 +745,7 @@ body[data-caps="on"][data-script="en"][data-mode="sprint"][data-diff="hard"] .ca
     padding: 0;
     gap: 16px;
   }
-  .coffee { margin-top: 0; justify-self: end; align-self: start; }
+  .tip { margin-top: 0; justify-self: end; align-self: start; width: min(200px, 100%); }
   .ad-slot.sidebar.placeholder,
   .ad-slot.sidebar.live { min-height: 84px; }
   .field, .desk { min-height: 0; }
